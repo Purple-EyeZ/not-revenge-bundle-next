@@ -36,6 +36,9 @@ jobs:
           git remote add upstream $UPSTREAM_REPO
           git fetch upstream $UPSTREAM_BRANCH
 
+          echo "UPSTREAM_SHA=$(git rev-parse "upstream/${UPSTREAM_BRANCH}")" >> $GITHUB_OUTPUT
+          echo "UPSTREAM_SHORT_SHA=$(git rev-parse --short "upstream/${UPSTREAM_BRANCH}")" >> $GITHUB_OUTPUT
+
           git merge "upstream/${UPSTREAM_BRANCH}" --no-edit
 
           echo "New HEAD SHA: $(git rev-parse HEAD)"
@@ -95,10 +98,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          TITLE="Auto Sync (${{ steps.sync.outputs.UPSTREAM_SHORT_SHA }})"
+          NOTES=$(cat <<EOF
+          Synced with upstream repository. This is an automated release.
+          Upstream Commit: ${{ steps.sync.outputs.UPSTREAM_SHA }}
+          Release Date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          EOF
+          )
           TAG_NAME="release-$(date +'%Y%m%d-%H%M%S')"
           gh release create "$TAG_NAME" \
             --repo ${{ github.repository }} \
-            --title "Automatic Sync: $TAG_NAME" \
-            --generate-notes \
-            --notes "Synced with upstream repository. This is an automated release." \
+            --title "$TITLE" \
+            --notes "$NOTES" \
             dist/revenge.bundle
