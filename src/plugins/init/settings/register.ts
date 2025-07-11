@@ -11,9 +11,10 @@ import ReactVersionSetting from './definitions/ReactVersionSetting'
 import ReloadSetting from './definitions/ReloadSetting'
 import RevengeCustomPageSetting from './definitions/RevengeCustomPageSetting'
 import RevengeDiscordSetting from './definitions/RevengeDiscordSetting'
-import RevengeGitHubSetting from './definitions/RevengeGitHubSetting'
+import RevengeLicenseSetting from './definitions/RevengeLicenseSetting'
 import RevengePluginsSetting from './definitions/RevengePluginsSetting'
 import RevengeSetting from './definitions/RevengeSetting'
+import RevengeSourceRepositorySetting from './definitions/RevengeSourceRepositorySetting'
 import RevengeVersionSetting from './definitions/RevengeVersionSetting'
 
 registerSettingsItems({
@@ -22,7 +23,8 @@ registerSettingsItems({
     // [MobileSetting.REVENGE_THEMES]: RevengeThemesSetting,
     // [MobileSetting.REVENGE_FONTS]: RevengeFontsSetting,
     [Setting.RevengeCustomPage]: RevengeCustomPageSetting,
-    [Setting.RevengeGitHub]: RevengeGitHubSetting,
+    [Setting.RevengeSourceRepository]: RevengeSourceRepositorySetting,
+    [Setting.RevengeLicense]: RevengeLicenseSetting,
     [Setting.RevengeDiscord]: RevengeDiscordSetting,
     [Setting.Reload]: ReloadSetting,
     [Setting.RevengeVersion]: RevengeVersionSetting,

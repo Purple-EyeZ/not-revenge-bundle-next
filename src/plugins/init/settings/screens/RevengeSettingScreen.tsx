@@ -11,7 +11,8 @@ export default function RevengeSettingScreen() {
                     settings: [
                         Setting.RevengeVersion,
                         Setting.RevengeDiscord,
-                        Setting.RevengeGitHub,
+                        Setting.RevengeSourceRepository,
+                        Setting.RevengeLicense,
                     ],
                     subLabel: (
                         <>

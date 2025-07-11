@@ -10,7 +10,8 @@ export const Setting = {
     // SUBSETTINGS
 
     RevengeDiscord: 'RevengeDiscord',
-    RevengeGitHub: 'RevengeGitHub',
+    RevengeSourceRepository: 'RevengeSourceRepository',
+    RevengeLicense: 'RevengeLicense',
     Reload: 'Reload',
 
     RevengeVersion: 'RevengeVersion',

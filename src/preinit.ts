@@ -6,7 +6,7 @@ import {
     onModuleInitialized,
 } from '@revenge-mod/modules/metro/subscriptions'
 import { getErrorStack } from '@revenge-mod/utils/error'
-import { BuildEnvironment } from './constants'
+import { BuildEnvironment, FullVersion } from './constants'
 
 const IndexModuleId = 0
 
@@ -66,7 +66,7 @@ function onError(e: unknown) {
     const Device = DeviceModule.getConstants()
 
     alert(
-        `Failed to load Revenge (${__BUILD_VERSION__}-${__BUILD_COMMIT__}-${__BUILD_BRANCH__} (${BuildEnvironment}))\n` +
+        `Failed to load Revenge (${FullVersion} (${BuildEnvironment}))\n` +
             `Discord: ${Client.Version} (${Client.Build})\n` +
             `Device: ${Device.deviceManufacturer} ${Device.deviceModel}\n\n` +
             getErrorStack(e),

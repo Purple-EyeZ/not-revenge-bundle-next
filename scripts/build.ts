@@ -33,6 +33,9 @@ export default async function build(dev = Dev, log = true) {
     if (log) console.info(chalk.cyanBright('\u{1F5BB} Assets generated'))
     if (log) console.info(chalk.gray('\u{1F5CE} Compiling JS...'))
 
+    const COMMIT = (await $`git rev-parse HEAD`.text()).trim().substring(0, 7)
+    const REPO = 'revenge-mod/revenge-bundle-next'
+
     const bundle = await rolldown({
         input: 'src/index.ts',
         platform: 'neutral',
@@ -48,10 +51,17 @@ export default async function build(dev = Dev, log = true) {
             '.webp': 'dataurl',
         },
         define: {
-            __BUILD_VERSION__: JSON.stringify(pkg.version),
-            __BUILD_COMMIT__: JSON.stringify(
-                (await $`git rev-parse HEAD`.text()).trim().substring(0, 7),
+            __BUILD_DISCORD_SERVER_URL__: JSON.stringify(
+                'https://discord.com/invite/ddcQf3s2Uq',
             ),
+            __BUILD_SOURCE_REPOSITORY_URL__: JSON.stringify(
+                `https://github.com/${REPO}`,
+            ),
+            __BUILD_LICENSE_URL__: JSON.stringify(
+                `https://raw.githubusercontent.com/${REPO}/${COMMIT}/LICENSE`,
+            ),
+            __BUILD_VERSION__: JSON.stringify(pkg.version),
+            __BUILD_COMMIT__: JSON.stringify(COMMIT),
             __BUILD_BRANCH__: JSON.stringify(
                 (await $`git rev-parse --abbrev-ref HEAD`.text()).trim(),
             ),
