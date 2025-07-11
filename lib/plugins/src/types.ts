@@ -12,6 +12,7 @@ export interface PluginApiExtensionsOptions {}
  * Available in the `preInit` phase.
  */
 export interface UnscopedPreInitPluginApi<
+    // biome-ignore lint/correctness/noUnusedVariables: This is used for extensions
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
 > {
     modules: PluginApiModules
@@ -49,6 +50,7 @@ export type PluginCleanupApi = (...fns: PluginCleanup[]) => void
  * Available in the `preInit` phase.
  */
 export interface PreInitPluginApi<
+    // biome-ignore lint/correctness/noUnusedVariables: This is used for extensions
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
 > {
     unscoped: UnscopedPreInitPluginApi

@@ -22,10 +22,10 @@ export function useReRender() {
 const ReactFiberWalkable = new Set(['props', 'children', 'child', 'sibling'])
 
 export function findInReactFiber<F extends SearchFilter>(
-    tree: Extract<ReactNode, object>,
+    fiber: Extract<ReactNode, object>,
     filter: F,
 ) {
-    return findInTree<F>(tree, filter, {
+    return findInTree<F>(fiber, filter, {
         walkable: ReactFiberWalkable,
     })
 }

@@ -40,6 +40,9 @@ const metroDefine = (
         () => {
             handleFactoryCall(factory, moduleObject)
         },
+        undefined, // Imported default
+        undefined, // Imported all
+        undefined, // Error
     ])
 }
 
