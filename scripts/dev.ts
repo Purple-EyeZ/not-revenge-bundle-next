@@ -1,5 +1,5 @@
 import watcher from '@parcel/watcher'
-import { debounce } from '@revenge-mod/utils/callbacks'
+import { debounce } from '@revenge-mod/utils/callback'
 import chalk from 'chalk'
 import os from 'os'
 import { join } from 'path'
