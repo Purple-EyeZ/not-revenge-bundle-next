@@ -1,0 +1,90 @@
+name: Sync Upstream and Release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+
+jobs:
+  sync-build-release:
+    name: Sync, Build and Release
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync with upstream
+        id: sync
+        run: |
+          UPSTREAM_REPO="https://github.com/revenge-mod/revenge-bundle-next.git"
+          UPSTREAM_BRANCH="main"
+          FORK_BRANCH="main"
+
+          echo "Current HEAD SHA: $(git rev-parse HEAD)"
+          echo "BEFORE_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+          git remote add upstream $UPSTREAM_REPO
+          git fetch upstream $UPSTREAM_BRANCH
+
+          git merge "upstream/${UPSTREAM_BRANCH}" --no-edit
+
+          echo "New HEAD SHA: $(git rev-parse HEAD)"
+          echo "AFTER_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+          git push origin "HEAD:${FORK_BRANCH}"
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if [[ "${{ steps.sync.outputs.BEFORE_SHA }}" == "${{ steps.sync.outputs.AFTER_SHA }}" ]]; then
+            echo "No new commits from upstream. Exiting."
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "New commits detected. Proceeding with build and release."
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Restore Bun cache
+        if: steps.check_changes.outputs.has_changes == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Setup Bun
+        if: steps.check_changes.outputs.has_changes == 'true'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: bun install --frozen-lockfile --production
+
+      - name: Build production bundle
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: bun run build
+
+      - name: Create Release and Upload Bundle
+        if: steps.check_changes.outputs.has_changes == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="release-$(date +'%Y%m%d-%H%M%S')"
+          gh release create "$TAG_NAME" \
+            --title "Automatic Sync: $TAG_NAME" \
+            --generate-notes \
+            --notes "Synced with upstream repository. This is an automated release." \
+            dist/revenge.bundle
