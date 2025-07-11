@@ -125,6 +125,7 @@ export default async function build(dev = Dev, log = true) {
             compress: false,
             mangle: true,
         },
+        minifyInternalExports: true,
         file: 'dist/revenge.js',
         format: 'iife',
     })
