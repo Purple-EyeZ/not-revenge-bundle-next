@@ -84,6 +84,7 @@ jobs:
         run: |
           TAG_NAME="release-$(date +'%Y%m%d-%H%M%S')"
           gh release create "$TAG_NAME" \
+            --repo ${{ github.repository }} \
             --title "Automatic Sync: $TAG_NAME" \
             --generate-notes \
             --notes "Synced with upstream repository. This is an automated release." \
