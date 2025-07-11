@@ -1,5 +1,5 @@
 import { ReactNavigationNative } from '@revenge-mod/externals/react-navigation'
-import { findInTree } from '@revenge-mod/utils/trees'
+import { findInTree } from '@revenge-mod/utils/tree'
 import { Constants } from '../../common'
 import { RootNavigationRef } from '../main_tabs_v2'
 import { sData, sSubscriptions } from './_internal'

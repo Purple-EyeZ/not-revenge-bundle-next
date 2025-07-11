@@ -1,5 +1,5 @@
 import { pUnscopedApi } from '@revenge-mod/plugins/_'
-import { defineLazyProperties } from '@revenge-mod/utils/objects'
+import { defineLazyProperties } from '@revenge-mod/utils/object'
 import type { UnscopedInitPluginApi } from '@revenge-mod/plugins/types'
 import type { PluginApiExternals } from './types'
 

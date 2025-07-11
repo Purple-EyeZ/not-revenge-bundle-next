@@ -1,4 +1,9 @@
 import {
+    cacheBlacklistedModule,
+    cached,
+    getCachedBlacklistedModules,
+} from '../caches'
+import {
     global,
     metroImportAll,
     metroImportDefault,
@@ -89,7 +94,7 @@ function handleFactoryCall(
     factory: Metro.FactoryFn,
     moduleObject: Metro.Module,
 ) {
-    const prevIId = mInitializingId
+    const prevId = mInitializingId
     mInitializingId = moduleObject.id!
 
     executeRequireSubscriptions(mInitializingId)
@@ -105,20 +110,46 @@ function handleFactoryCall(
             mDeps[mInitializingId],
         )
 
-        const { exports: actualExports } = moduleObject
+        const { exports } = moduleObject
 
-        // Add the module to the initialized set only if the factory doesn't error or the exports aren't bad
-        // Don't use exports here, as modules can set module.exports to a different object
-        if (actualExports != null) mInitialized.add(mInitializingId)
+        // If we don't have the ID in mUninitialized, it means the module is blacklisted
+        if (mUninitialized.has(mInitializingId)) {
+            // Blacklist exports that:
+            // - are primitives (https://developer.mozilla.org/en-US/docs/Glossary/Primitive)
+            // - are empty objects
+            if (exports instanceof Object)
+                switch (exports.__proto__) {
+                    case Object.prototype:
+                    // This null case is for nativeModuleProxy specifically
+                    // @ts-expect-error: Intentional
+                    // biome-ignore lint/suspicious/noFallthroughSwitchClause: Intentional
+                    case null:
+                        if (!Reflect.ownKeys(exports).length) {
+                            cacheBlacklistedModule(mInitializingId)
+                            break
+                        }
 
-        executeInitializeSubscriptions(mInitializingId, actualExports)
+                    default:
+                        mInitialized.add(mInitializingId)
+                }
+            else cacheBlacklistedModule(mInitializingId)
+        }
+
+        executeInitializeSubscriptions(mInitializingId, exports)
     } finally {
         mUninitialized.delete(mInitializingId)
-        mInitializingId = prevIId
+        mInitializingId = prevId
     }
 }
 
 /// MODULE PATCHES AND BLACKLISTS
+
+// Restore blacklists
+cached.then(cached => {
+    if (cached)
+        for (const id of getCachedBlacklistedModules())
+            mUninitialized.delete(id)
+})
 
 const ImportTrackerModuleId = 2
 
@@ -130,11 +161,4 @@ onModuleInitialized(ImportTrackerModuleId, (_, exports) => {
         mImportedPaths.set(path, id)
         executeImportedPathSubscriptions(id, path)
     }
-})
-
-const NativeModuleProxyModuleId = 45
-
-// Exports nativeModuleProxy, which we want to blacklist
-onModuleInitialized(NativeModuleProxyModuleId, () => {
-    mInitialized.delete(NativeModuleProxyModuleId)
 })

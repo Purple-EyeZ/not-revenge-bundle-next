@@ -1,11 +1,80 @@
 // TODO(storage): Implement using NativeModules interop instead
 
 import { FileModule } from '@revenge-mod/discord/native'
-// This file is usually imported way too early, so we can't import our shim
-import { React } from '@revenge-mod/react'
-import { mergeDeep } from '@revenge-mod/utils/objects'
-import { useReRender } from '@revenge-mod/utils/react'
+import { getErrorStack } from '@revenge-mod/utils/error'
+import { mergeDeep } from '@revenge-mod/utils/object'
 import type { AnyObject, DeepPartial } from '@revenge-mod/utils/types'
+
+export type StorageSubscription<T extends AnyObject = AnyObject> = (
+    v: DeepPartial<T>,
+) => void
+
+export function Storage<T extends AnyObject>(
+    this: Storage<T>,
+    path: string,
+    options?: StorageOptions<T>,
+) {
+    const { CacheDirPath, DocumentsDirPath } = FileModule.getConstants()
+
+    const directory = options?.directory ?? 'documents'
+    const dirPath = directory === 'cache' ? CacheDirPath : DocumentsDirPath
+    const fullPath = `${dirPath}/${path}`
+
+    this._s = new Set<StorageSubscription<T>>()
+
+    this.loaded = false
+    this.cache = options?.default
+
+    this.exists = () => FileModule.fileExists(fullPath)
+    this.delete = () => FileModule.removeFile(directory, path)
+
+    this.get = async function () {
+        if (!(await this.exists())) {
+            this.cache = options?.default ?? {}
+            await this.set({})
+            this.loaded = true
+            return this.cache
+        }
+
+        const contents = await FileModule.readFile(fullPath, 'utf8')
+        if (contents) {
+            this.loaded = true
+            try {
+                const cache = (this.cache = JSON.parse(contents))
+                for (const sub of this._s) sub(cache)
+                return cache
+            } catch (e) {
+                nativeLoggingHook(
+                    `Failed to parse storage (<${directory}>/${path}): ${getErrorStack(e)}`,
+                    2,
+                )
+            }
+        }
+    }
+
+    this.set = async function (value) {
+        if (!this.cache) await this.get()
+        mergeDeep(this.cache!, value)
+
+        try {
+            const contents = JSON.stringify(this.cache)
+            await FileModule.writeFile(directory, path, contents, 'utf8')
+
+            for (const sub of this._s) sub(value)
+        } catch (e) {
+            nativeLoggingHook(
+                `Failed to write storage (<${directory}>/${path}): ${getErrorStack(e)}`,
+                2,
+            )
+        }
+    }
+}
+
+// React is only initialized right before the init stage, so this is a dummy method
+// See init.ts for the actual implementation
+Storage.prototype.use = () => {
+    throw new Error('Storage#use can only be called after the init stage!')
+}
 
 /**
  * Get a storage object for a given path and directory.
@@ -17,91 +86,8 @@ export function getStorage<T extends AnyObject = AnyObject>(
     path: string,
     options?: StorageOptions<T>,
 ): Storage<T> {
-    const { CacheDirPath, DocumentsDirPath } = FileModule.getConstants()
-
-    const directory = options?.directory ?? 'documents'
-    const dirPath = directory === 'cache' ? CacheDirPath : DocumentsDirPath
-    const fullPath = `${dirPath}/${path}`
-
-    type Subscription = (v: DeepPartial<T>) => void
-    const subs = new Set<Subscription>()
-
-    const storage: Storage<T> = {
-        loaded: false,
-        cache: options?.default,
-        use(filter) {
-            if (!this.cache) this.get()
-
-            const reRender = useReRender()
-
-            React.useEffect(() => {
-                const sub = (
-                    filter
-                        ? v => {
-                              if (filter(v)) reRender()
-                          }
-                        : reRender
-                ) as Subscription
-
-                subs.add(sub)
-
-                return () => {
-                    subs.delete(sub)
-                }
-            }, [])
-
-            return this.cache
-        },
-        exists() {
-            return FileModule.fileExists(fullPath)
-        },
-        delete() {
-            return FileModule.removeFile(directory, path)
-        },
-        async get() {
-            if (!(await this.exists())) {
-                this.cache = options?.default ?? {}
-                await this.set({})
-                this.loaded = true
-                return this.cache
-            }
-
-            const contents = await FileModule.readFile(fullPath, 'utf8')
-            if (contents) {
-                this.loaded = true
-                try {
-                    const cache = (this.cache = JSON.parse(contents))
-                    for (const sub of subs) sub(cache)
-                    return cache
-                } catch (e) {
-                    console.error(
-                        'Failed to parse storage file (most likely corrupted)',
-                        directory,
-                        path,
-                        e,
-                    )
-                }
-            }
-        },
-        async set(value) {
-            if (!this.cache) await this.get()
-            mergeDeep(this.cache!, value)
-
-            try {
-                const contents = JSON.stringify(this.cache)
-                await FileModule.writeFile(directory, path, contents, 'utf8')
-
-                for (const sub of subs) sub(value)
-            } catch (e) {
-                console.error(
-                    'Failed to write storage file',
-                    directory,
-                    path,
-                    e,
-                )
-            }
-        },
-    }
+    const storage: Storage<T> = Object.create(Storage.prototype)
+    Storage.call(storage, path, options)
 
     if (options?.load) storage.get()
 
@@ -129,6 +115,10 @@ export type UseStorageFilter<T extends AnyObject> = (
 
 export interface Storage<T extends AnyObject> {
     /**
+     * @internal
+     */
+    _s: Set<StorageSubscription<T>>
+    /**
      * Whether the storage has been loaded. If the storage is not loaded, `storage.cache` may be `undefined`.
      * If you have `options.default` set, you can use this property to check if `storage.cache` is the default value or not.
      */
@@ -140,6 +130,8 @@ export interface Storage<T extends AnyObject> {
     cache?: T | AnyObject
     /**
      * Use the storage in a React component. The component will re-render when the storage is updated.
+     *
+     * This can only be used in the `init` stage or later, as it requires React to be initialized.
      *
      * @example
      * ```tsx

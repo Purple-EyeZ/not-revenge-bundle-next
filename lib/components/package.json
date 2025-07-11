@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
     "./FormSwitch": {
       "default": "./src/FormSwitch.tsx"
     },

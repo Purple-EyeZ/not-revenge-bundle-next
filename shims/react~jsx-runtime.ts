@@ -4,16 +4,12 @@ import type { ElementType } from 'react'
 
 const { jsx: _jsx, jsxs: _jsxs, Fragment } = ReactJSXRuntime
 
-const jsx = ((type, ...args) =>
-    _jsx(unproxy(type as object), ...args)) as typeof _jsx
+const jsx: typeof _jsx = (type, props, key) => _jsx(unproxy(type), props, key)
+const jsxs: typeof _jsxs = (type, props, key) =>
+    _jsxs(unproxy(type), props, key)
 
-const jsxs = ((type, ...args) =>
-    _jsxs(unproxy(type as object), ...args)) as typeof _jsxs
-
-function unproxy(type: object): ElementType {
-    return (isProxified(type)
-        ? unproxify(type)
-        : type) as unknown as ElementType
+function unproxy(type: any): ElementType {
+    return isProxified(type) ? unproxify(type) : type
 }
 
 module.exports = { jsx, jsxs, Fragment }

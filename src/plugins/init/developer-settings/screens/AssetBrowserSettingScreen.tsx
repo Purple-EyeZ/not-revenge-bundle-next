@@ -9,7 +9,7 @@ import {
 import { Design } from '@revenge-mod/discord/design'
 import { Clipboard } from '@revenge-mod/externals/react-native-clipboard'
 import { FlashList } from '@revenge-mod/externals/shopify'
-import { debounce } from '@revenge-mod/utils/callbacks'
+import { debounce } from '@revenge-mod/utils/callback'
 import { lookupGeneratedIconComponent } from '@revenge-mod/utils/discord'
 import { useCallback, useMemo, useState } from 'react'
 import { Image, StyleSheet, useWindowDimensions } from 'react-native'

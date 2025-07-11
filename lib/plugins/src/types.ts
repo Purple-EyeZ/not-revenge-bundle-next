@@ -18,7 +18,7 @@ export interface UnscopedPreInitPluginApi<
     modules: PluginApiModules
     patcher: typeof import('@revenge-mod/patcher')
     plugins: PluginApiPlugins
-    // utils: PluginApiUtils
+    storage: typeof import('@revenge-mod/storage')
 }
 
 /**
@@ -38,9 +38,7 @@ export interface UnscopedInitPluginApi<
  */
 export interface UnscopedPluginApi<
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
-> extends UnscopedInitPluginApi<O> {
-    // ui: typeof import('@revenge-mod/ui')
-}
+> extends UnscopedInitPluginApi<O> {}
 
 export type PluginCleanup = () => any
 export type PluginCleanupApi = (...fns: PluginCleanup[]) => void

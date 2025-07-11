@@ -160,7 +160,7 @@ export function waitForModuleByImportedPath<T = any>(
                   }
               }
             : (id, cmpPath) => {
-                  if (path === cmpPath && mInitialized.has(id)) {
+                  if (mInitialized.has(id) && path === cmpPath) {
                       unsub()
                       callback(getInitializedModuleExports(id), id)
                   }

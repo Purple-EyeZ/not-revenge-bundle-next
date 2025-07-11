@@ -1,4 +1,4 @@
-import { noopFalse } from '@revenge-mod/utils/callbacks'
+import { noopFalse } from '@revenge-mod/utils/callback'
 import {
     lookupModule,
     lookupModuleByImportedPath,
@@ -87,7 +87,7 @@ export function getModule(
 
     if (max === 1) {
         const [exports, id] = lookupModule(filter, options!)
-        if (id != null) {
+        if (id !== undefined) {
             callback(exports, id)
             return noopFalse
         }
@@ -131,7 +131,7 @@ export function getModuleByImportedPath<T>(
     callback: GetModuleCallback<T>,
 ): GetModuleUnsubscribeFunction {
     const [exports, id] = lookupModuleByImportedPath(path)
-    if (id != null) {
+    if (id !== undefined) {
         callback(exports, id)
         return noopFalse
     }

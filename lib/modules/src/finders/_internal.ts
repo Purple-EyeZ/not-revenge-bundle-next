@@ -1,5 +1,5 @@
-import { getCurrentStack } from '@revenge-mod/utils/errors'
-import { cacheFilterResult } from '../caches'
+import { getCurrentStack } from '@revenge-mod/utils/error'
+import { cacheFilterResultForId } from '../caches'
 import { isModuleExportBad } from '../metro/utils'
 import type { If } from '@revenge-mod/utils/types'
 import type { Metro } from '../types'
@@ -103,13 +103,17 @@ export function runFilter(
     }
 
     if (filter(id, exports))
-        return cacheFilterResult(filter.key, id, FilterResultFlags.Namespace)
+        return cacheFilterResultForId(
+            filter.key,
+            id,
+            FilterResultFlags.Namespace,
+        )
 
     if (options?.skipDefault) return
 
     const { default: defaultExport } = exports
     if (!isModuleExportBad(defaultExport) && filter(id, defaultExport))
-        return cacheFilterResult(filter.key, id, FilterResultFlags.Default)
+        return cacheFilterResultForId(filter.key, id, FilterResultFlags.Default)
 }
 
 export function exportsFromFilterResultFlag(

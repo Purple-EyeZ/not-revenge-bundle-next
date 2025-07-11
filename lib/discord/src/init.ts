@@ -2,7 +2,7 @@ import { pEmitter, pUnscopedApi } from '@revenge-mod/plugins/_'
 import {
     defineLazyProperties,
     defineLazyProperty,
-} from '@revenge-mod/utils/objects'
+} from '@revenge-mod/utils/object'
 import { Logger } from './common'
 import type { UnscopedInitPluginApi } from '@revenge-mod/plugins/types'
 import type { PluginApiDiscord } from './types/revenge'

@@ -3,8 +3,8 @@
  * This is especially useful for blacklisting exports that cannot be patched.
  */
 
-import { getCurrentStack } from './errors'
-import { _targets } from './patches/proxy'
+import { getCurrentStack } from './error'
+import { pTargets } from './patches/proxy'
 
 /**
  * Returns whether the object is a proxy.
@@ -12,7 +12,7 @@ import { _targets } from './patches/proxy'
  * @param obj The object to check
  */
 export function isProxy(obj: object) {
-    return _targets.has(obj)
+    return pTargets.has(obj)
 }
 
 /**
@@ -31,7 +31,7 @@ export function isProxified(obj: object) {
  * @returns The target of the proxy
  */
 export function getProxyTarget(obj: object) {
-    return _targets.get(obj)
+    return pTargets.get(obj)
 }
 
 // Heavily inspired by Wintry's lazy utils, but more optimized and stripped down, with a few fixes.

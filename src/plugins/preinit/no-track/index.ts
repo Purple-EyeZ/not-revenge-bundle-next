@@ -5,8 +5,8 @@ import { getModuleDependencies } from '@revenge-mod/modules/metro/utils'
 import { instead } from '@revenge-mod/patcher'
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'
-import { noop } from '@revenge-mod/utils/callbacks'
-import { getErrorStack } from '@revenge-mod/utils/errors'
+import { noop } from '@revenge-mod/utils/callback'
+import { getCurrentStack } from '@revenge-mod/utils/error'
 
 // TODO(plugins/no-track): Block Sentry native-side
 registerPlugin(
@@ -57,6 +57,7 @@ registerPlugin(
 
             // Discord uses ReactNavigationInstrumentation to track navigation
             // Discord also uses Profiler to track performance, but we blocked that by patching profiledRootComponent
+            // Note that to actually find Sentry, we just need to add 'init' to byProps
             const unsubSentryInst = waitForModules(
                 byProps('ReactNavigationInstrumentation'),
                 exports => {
@@ -75,7 +76,7 @@ registerPlugin(
 
             if (__DEV__)
                 Object.defineProperty(globalThis, '__SENTRY__', {
-                    set: () => warnSetSentry(getErrorStack(new Error())!),
+                    set: () => warnSetSentry(getCurrentStack()),
                 })
             else
                 Object.defineProperty(globalThis, '__SENTRY__', {

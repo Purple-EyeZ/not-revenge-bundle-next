@@ -4,28 +4,25 @@
   "type": "module",
   "exports": {
     "./patches/objects": {
-      "default": "./src/patches/objects.ts"
+      "default": "./src/patches/object.ts"
     },
     "./patches/proxy": {
       "default": "./src/patches/proxy.ts"
     },
-    "./callbacks": {
-      "default": "./src/callbacks.ts"
+    "./callback": {
+      "default": "./src/callback.ts"
     },
     "./discord": {
       "default": "./src/discord.ts"
     },
-    "./errors": {
-      "default": "./src/errors.ts"
+    "./error": {
+      "default": "./src/error.ts"
     },
-    "./generators": {
-      "default": "./src/generators.ts"
+    "./object": {
+      "default": "./src/object.ts"
     },
-    "./objects": {
-      "default": "./src/objects.ts"
-    },
-    "./promises": {
-      "default": "./src/promises.ts"
+    "./promise": {
+      "default": "./src/promise.ts"
     },
     "./proxy": {
       "default": "./src/proxy.ts"
@@ -33,11 +30,17 @@
     "./react": {
       "default": "./src/react.ts"
     },
-    "./trees": {
-      "default": "./src/trees.ts"
+    "./tree": {
+      "default": "./src/tree.ts"
     },
     "./types": {
       "types": "./src/types.ts"
+    },
+    "./preinit": {
+      "default": "./src/preinit.ts"
+    },
+    "./init": {
+      "default": "./src/init.ts"
     }
   }
 }

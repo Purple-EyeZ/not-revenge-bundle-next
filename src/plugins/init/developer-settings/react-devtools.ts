@@ -1,7 +1,7 @@
 import { ToastActionCreators } from '@revenge-mod/discord/actions'
 import { TypedEventEmitter } from '@revenge-mod/discord/common/utils'
 import { lookupGeneratedIconComponent } from '@revenge-mod/utils/discord'
-import { getErrorStack } from '@revenge-mod/utils/errors'
+import { getErrorStack } from '@revenge-mod/utils/error'
 import { useReRender } from '@revenge-mod/utils/react'
 import { useEffect } from 'react'
 import { api } from '.'

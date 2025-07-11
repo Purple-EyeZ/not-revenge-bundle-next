@@ -1,8 +1,8 @@
 // TODO(lib/assets): do not depend on Discord's ClientInfoModule for versioning, use native interop
 import { ClientInfoModule } from '@revenge-mod/discord/native'
 import { getStorage } from '@revenge-mod/storage'
-import { debounce } from '@revenge-mod/utils/callbacks'
-import { mergeDeep } from '@revenge-mod/utils/objects'
+import { debounce } from '@revenge-mod/utils/callback'
+import { mergeDeep } from '@revenge-mod/utils/object'
 import type { Metro } from '@revenge-mod/modules/types'
 import type { Asset } from './types'
 

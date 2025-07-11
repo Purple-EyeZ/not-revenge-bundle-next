@@ -1,13 +1,12 @@
-// @revenge-mod/storage depends on this file, and it is imported way too early, so we can't import our shim
-import { React } from '@revenge-mod/react'
-import { findInTree } from './trees'
+import { useEffect, useReducer } from 'react'
+import { findInTree } from './tree'
 import type { ReactNode } from 'react'
-import type { SearchFilter } from './trees'
+import type { SearchFilter } from './tree'
 
 export function useIsFirstRender() {
     let firstRender = false
 
-    React.useEffect(() => {
+    useEffect(() => {
         firstRender = true
     }, [])
 
@@ -15,7 +14,7 @@ export function useIsFirstRender() {
 }
 
 export function useReRender() {
-    const [, forceUpdate] = React.useReducer(x => ~x, 0)
+    const [, forceUpdate] = useReducer(x => ~x, 0)
     return forceUpdate
 }
 

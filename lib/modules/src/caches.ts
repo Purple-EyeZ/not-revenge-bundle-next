@@ -1,16 +1,16 @@
 // TODO(lib/modules/caches): do not depend on Discord's ClientInfoModule for versioning, use native interop
 import { ClientInfoModule } from '@revenge-mod/discord/native'
 import { getStorage } from '@revenge-mod/storage'
-import { debounce } from '@revenge-mod/utils/callbacks'
+import { debounce } from '@revenge-mod/utils/callback'
 import type { Metro } from '@revenge-mod/modules/types'
 import type { FilterResultFlag } from './finders/_internal'
 import type { Filter } from './finders/filters'
 
-const Version = 1
+const Version = 2
 const Key = `${Version}.${ClientInfoModule.getConstants().Build}`
 
 // In-memory cache
-export const cache: Cache = {}
+const cache: Cache = { b: [], f: {} }
 
 const CacheStorage = getStorage<Cache>(`revenge/modules.${Key}`, {
     default: cache,
@@ -30,25 +30,43 @@ export const cached = CacheStorage.get().then(cache_ => {
 })
 
 export interface Cache {
-    [key: Filter['key']]:
-        | Record<Metro.ModuleID, FilterResultFlag>
-        | null
-        | undefined
+    b: Metro.ModuleID[]
+    f: Record<
+        Filter['key'],
+        Record<Metro.ModuleID, FilterResultFlag> | null | undefined
+    >
 }
 
 const save = debounce(() => {
     CacheStorage.set({})
 }, 1000)
 
-export function cacheFilterResult(
+export function cacheBlacklistedModule(id: Metro.ModuleID): boolean {
+    cache.b.push(id)
+    save()
+
+    return true
+}
+
+export function cacheFilterResultForId(
     key: Filter['key'],
     id: Metro.ModuleID,
     flag: FilterResultFlag,
 ): FilterResultFlag {
-    const reg = (cache[key] ??= {})
+    const reg = (cache.f[key] ??= {})
     reg[id] = flag
 
     save()
 
     return flag
 }
+
+export function cacheFilterNotFound(key: Filter['key']) {
+    cache.f[key] = null
+}
+
+export const getCachedFilterRegistry = (
+    key: Filter['key'],
+): Cache['f'][Filter['key']] | undefined => cache.f[key]
+
+export const getCachedBlacklistedModules = () => cache.b

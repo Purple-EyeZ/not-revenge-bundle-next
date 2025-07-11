@@ -1,6 +1,6 @@
 import { TypedEventEmitter } from '@revenge-mod/discord/common/utils'
-import { getErrorStack } from '@revenge-mod/utils/errors'
-import { allSettled, sleepReject } from '@revenge-mod/utils/promises'
+import { getErrorStack } from '@revenge-mod/utils/error'
+import { allSettled, sleepReject } from '@revenge-mod/utils/promise'
 import { pUnscopedApi as uapi } from './apis'
 import { PluginFlags as Flag, PluginStatus as Status } from './constants'
 import type {
