@@ -98,10 +98,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TITLE="Auto Sync (${{ steps.sync.outputs.UPSTREAM_SHORT_SHA }})"
+          TITLE="Auto Sync (${{ steps.sync.outputs.UPSTREAM_SHA }})"
           NOTES=$(cat <<EOF
           Synced with upstream repository. This is an automated release.
+
           Upstream Commit: ${{ steps.sync.outputs.UPSTREAM_SHA }}
+
           Release Date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
           EOF
           )
