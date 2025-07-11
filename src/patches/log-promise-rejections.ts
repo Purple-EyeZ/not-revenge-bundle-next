@@ -12,13 +12,14 @@ const ErrorTypeWhitelist = [ReferenceError, TypeError, RangeError]
 Promise._m = (promise, err) => {
     if (err)
         setTimeout(
-            () =>
+            () => {
                 // (if promise._h is 0)
-                !promise._h &&
-                nativeLoggingHook(
-                    `\u001b[33mUnhandled promise rejection: ${getErrorStack(err)}\u001b[0m`,
-                    2,
-                ),
+                if (!promise._h)
+                    nativeLoggingHook(
+                        `\u001b[33mUnhandled promise rejection: ${getErrorStack(err)}\u001b[0m`,
+                        2,
+                    )
+            },
             // The time is completely arbitary. I've picked what Hermes chose.
             ErrorTypeWhitelist.some(it => err instanceof it) ? 0 : 2000,
         )

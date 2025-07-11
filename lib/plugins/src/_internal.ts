@@ -1,4 +1,5 @@
 import { TypedEventEmitter } from '@revenge-mod/discord/common/utils'
+import { getErrorStack } from '@revenge-mod/utils/errors'
 import { allSettled, sleepReject } from '@revenge-mod/utils/promises'
 import { pUnscopedApi as uapi } from './apis'
 import { PluginFlags as Flag, PluginStatus as Status } from './constants'
@@ -81,8 +82,11 @@ function handlePluginError(e: unknown, plugin: InternalPlugin) {
     plugin.flags |= Flag.Errored
     const [api, , iflags] = pMetadata.get(plugin.manifest.id)!
 
-    const log = (api as InitPluginApi).logger ?? console
-    log.error('Plugin encountered an error', e)
+    ;(api as InitPluginApi).logger.error('Plugin encountered an error', e)
+    nativeLoggingHook(
+        `\u001b[31mPlugin "${plugin.manifest.id}" encountered an error: ${getErrorStack(e)}\u001b[0m`,
+        2,
+    )
 
     pEmitter.emit('error', plugin, e)
 

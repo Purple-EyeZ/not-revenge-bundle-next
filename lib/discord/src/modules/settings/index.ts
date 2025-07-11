@@ -132,8 +132,10 @@ export async function refreshSettingsOverviewScreen(renavigate?: boolean) {
 
         navigation.navigate(mainState.routes[mainState.index].name)
 
-        for (const { name, params } of settingsState.routes)
-            navigation.dispatch(CommonActions.navigate(name, params))
+        // Dispatch on next paint
+        requestAnimationFrame(() => {
+            navigation.dispatch(CommonActions.reset(settingsState))
+        })
     } else {
         const {
             key: target,
