@@ -54,8 +54,21 @@ jobs:
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: Check for existing releases
+        id: check_releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release list --repo ${{ github.repository }} --limit 1 | grep -q "."; then
+            echo "Releases exist. Build will only proceed if there are new commits."
+            echo "force_build=false" >> $GITHUB_OUTPUT
+          else
+            echo "No releases found. Forcing build for initial release."
+            echo "force_build=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Restore Bun cache
-        if: steps.check_changes.outputs.has_changes == 'true'
+        if: steps.check_changes.outputs.has_changes == 'true' || steps.check_releases.outputs.force_build == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
@@ -64,21 +77,21 @@ jobs:
             ${{ runner.os }}-bun-
 
       - name: Setup Bun
-        if: steps.check_changes.outputs.has_changes == 'true'
+        if: steps.check_changes.outputs.has_changes == 'true' || steps.check_releases.outputs.force_build == 'true'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
       - name: Install dependencies
-        if: steps.check_changes.outputs.has_changes == 'true'
+        if: steps.check_changes.outputs.has_changes == 'true' || steps.check_releases.outputs.force_build == 'true'
         run: bun install --frozen-lockfile --production
 
       - name: Build production bundle
-        if: steps.check_changes.outputs.has_changes == 'true'
+        if: steps.check_changes.outputs.has_changes == 'true' || steps.check_releases.outputs.force_build == 'true'
         run: bun run build
 
       - name: Create Release and Upload Bundle
-        if: steps.check_changes.outputs.has_changes == 'true'
+        if: steps.check_changes.outputs.has_changes == 'true' || steps.check_releases.outputs.force_build == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
