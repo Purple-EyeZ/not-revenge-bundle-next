@@ -27,6 +27,9 @@ registerPlugin(
             AppStartPerformance.mark('👊', 'Plugins init', tsInit - tsPreInit)
         },
         start({ logger }) {
+            if (__DEV__)
+                nativeLoggingHook(`\u001b[31m--- START STAGE ---\u001b[0m`, 1)
+
             AppStartPerformance.mark(
                 '👊',
                 'Plugins start',

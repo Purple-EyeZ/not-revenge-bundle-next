@@ -30,7 +30,7 @@ export const pEmitter = new TypedEventEmitter<{
     start: [InternalPlugin, PluginApi]
     started: [InternalPlugin]
     stopped: [InternalPlugin]
-    error: [InternalPlugin, unknown]
+    errored: [InternalPlugin, unknown]
 }>()
 
 export const pList = new Map<PluginManifest['id'], InternalPlugin>()
@@ -88,7 +88,7 @@ function handlePluginError(e: unknown, plugin: InternalPlugin) {
         2,
     )
 
-    pEmitter.emit('error', plugin, e)
+    pEmitter.emit('errored', plugin, e)
 
     if (!(iflags & InternalPluginFlags.Essential)) return plugin.disable()
 }

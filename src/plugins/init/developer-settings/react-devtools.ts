@@ -21,7 +21,7 @@ export const RDTContext: {
 const events = new TypedEventEmitter<{
     connect: []
     disconnect: []
-    error: [unknown]
+    errored: [unknown]
 }>()
 
 const CircleXIcon = lookupGeneratedIconComponent(
@@ -47,7 +47,7 @@ export function connect() {
 
     ws.addEventListener('error', e => {
         cleanup()
-        events.emit('error', e)
+        events.emit('errored', e)
 
         const err = (e as { message: string }).message ?? getErrorStack(e)
         api.logger.error('React DevTools error:', err)

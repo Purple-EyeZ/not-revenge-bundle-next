@@ -11,6 +11,9 @@ const [, _createClassModuleId] = lookupModule(byName('_createClass'))
 const [, _classCallCheckModuleId] = lookupModule(byName('_classCallCheck'))
 
 // ../discord_common/js/shared/utils/TypedEventEmitter.tsx
+/**
+ * Do not use the `error` event, as the module will handle it specially for some reason.
+ */
 export let TypedEventEmitter: typeof DiscordModules.Utils.TypedEventEmitter =
     proxify(() => {
         const [module] = lookupModule(

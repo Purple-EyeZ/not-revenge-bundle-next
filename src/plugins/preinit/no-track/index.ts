@@ -85,7 +85,7 @@ registerPlugin(
 
             cleanup(unsubSU, unsubSIU, unsubSentryInst)
         },
-        init({ cleanup, logger }) {
+        start({ cleanup, logger }) {
             // utils/AnalyticsUtils.tsx
             const unsubAU = waitForModules(
                 byProps<{
