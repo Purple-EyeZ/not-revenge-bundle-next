@@ -83,9 +83,9 @@ export interface ProxifyOptions {
     /**
      * The hint for the proxified value.
      *
-     * @default 'function'
+     * @default function () {}
      */
-    hint?: 'object' | 'function' | object
+    hint?: object
     /**
      * Whether the proxified value should be cached.
      */
@@ -108,7 +108,7 @@ export interface ProxifyOptions {
  *
  * @example Without cache
  * ```ts
- * const proxified = proxify(() => ({ value: Math.random() }), { hint: 'object' })
+ * const proxified = proxify(() => ({ value: Math.random() }), { hint: {} })
  * console.log(proxified) // { value: 0.123 }
  * console.log(proxified.value) // 0.456
  * console.log(proxified) // { value: 0.789 }
@@ -116,28 +116,15 @@ export interface ProxifyOptions {
  *
  * @example With cache
  * ```ts
- * const proxified = proxify(() => ({ value: Math.random() }), { hint: 'object', cache: true })
+ * const proxified = proxify(() => ({ value: Math.random() }), { hint: {}, cache: true })
  * console.log(proxified) // { value: 0.123 }
  * console.log(proxified.value) // 0.123
  * console.log(proxified) // { value: 0.123 }
  * ```
  */
 export function proxify<T>(signal: () => T, options?: ProxifyOptions): T {
-    let hint: any
-
-    switch (options?.hint) {
-        case undefined:
-        case 'function':
-            // biome-ignore lint/complexity/useArrowFunction: We need a function with a constructor
-            hint = function () {}
-            break
-        case 'object':
-            hint = {}
-            break
-        default:
-            hint = options!.hint
-            break
-    }
+    // biome-ignore lint/complexity/useArrowFunction: We need a function with a constructor
+    const hint = options?.hint ?? function () {}
 
     _metas.set(hint, [
         signal,
@@ -150,7 +137,7 @@ export function proxify<T>(signal: () => T, options?: ProxifyOptions): T {
         if (v == null) DEBUG_warnNullishProxifiedValue()
     }
 
-    return new Proxy(hint, _handler)
+    return new Proxy(hint, _handler) as T
 }
 
 /**
@@ -165,7 +152,7 @@ export function proxify<T>(signal: () => T, options?: ProxifyOptions): T {
  *
  * @example Without cache
  * ```ts
- * const proxified = proxify(() => ({ value: Math.random() }), { hint: 'object' })
+ * const proxified = proxify(() => ({ value: Math.random() }), { hint: {} })
  * const x = unproxify(proxified)
  * console.log(x) // { value: 0.123 }
  * console.log(x.value) // 0.123
@@ -174,7 +161,7 @@ export function proxify<T>(signal: () => T, options?: ProxifyOptions): T {
  *
  * @example With cache
  * ```ts
- * const proxified = proxify(() => ({ value: Math.random() }), { hint: 'object', cache: true })
+ * const proxified = proxify(() => ({ value: Math.random() }), { hint: {}, cache: true })
  * const x = unproxify(proxified)
  * console.log(x) // { value: 0.123 }
  * console.log(x.value) // 0.123
@@ -209,7 +196,7 @@ function unproxifyFromHint(hint: object) {
  * // cache is not turned on, so each access will call the signal again
  * const { x, y } = destructure(
  *   proxify(() => ({ x: Math.random(), y: [Math.random()], z: null })),
- *   { hint: 'object' }
+ *   { hint: {} }
  * )
  *
  * // Non-nullish primitives are not proxifiable

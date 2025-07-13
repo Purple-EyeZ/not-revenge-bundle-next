@@ -30,7 +30,9 @@ export type ModuleFinishedImportingCallback = (
  */
 export function onAnyModuleInitialized(callback: ModuleInitializedCallback) {
     sInitializeAny.add(callback)
-    return () => sInitializeAny.delete(callback)
+    return () => {
+        sInitializeAny.delete(callback)
+    }
 }
 
 /**
@@ -56,7 +58,9 @@ export function onModuleInitialized(
     }
 
     set.add(callback)
-    return () => set.delete(callback)
+    return () => {
+        set.delete(callback)
+    }
 }
 
 /**
@@ -71,7 +75,9 @@ export function onModuleFinishedImporting(
     callback: ModuleFinishedImportingCallback,
 ) {
     sImportedPath.add(callback)
-    return () => sImportedPath.delete(callback)
+    return () => {
+        sImportedPath.delete(callback)
+    }
 }
 
 /**
@@ -88,7 +94,9 @@ export function onAnyModuleFirstRequired(
     callback: ModuleFirstRequiredCallback,
 ) {
     sRequireAny.add(callback)
-    return () => sRequireAny.delete(callback)
+    return () => {
+        sRequireAny.delete(callback)
+    }
 }
 
 /**
@@ -113,5 +121,7 @@ export function onModuleFirstRequired(
     }
 
     set.add(callback)
-    return () => set.delete(callback)
+    return () => {
+        set.delete(callback)
+    }
 }

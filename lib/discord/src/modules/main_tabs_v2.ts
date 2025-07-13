@@ -34,6 +34,6 @@ export let RootNavigationRef: RootNavigationRef = proxify(
         if (module) return (RootNavigationRef = module)
     },
     {
-        hint: 'object',
+        hint: {},
     },
 )!

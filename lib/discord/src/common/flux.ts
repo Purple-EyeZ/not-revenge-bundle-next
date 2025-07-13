@@ -11,7 +11,7 @@ import {
 } from '@revenge-mod/modules/finders/lookup'
 import { waitForModules } from '@revenge-mod/modules/finders/wait'
 import { getModuleDependencies } from '@revenge-mod/modules/metro/utils'
-import { noopFalse } from '@revenge-mod/utils/callback'
+import { noop } from '@revenge-mod/utils/callback'
 import { cached, cacheFilterResultForId } from '../../../modules/src/caches'
 import { FilterResultFlags } from '../../../modules/src/finders/_internal'
 import type {
@@ -73,7 +73,7 @@ export function getStore<T>(
     const store = _stores[name]
     if (store) {
         callback(store as DiscordModules.Flux.Store<T>)
-        return noopFalse
+        return noop
     }
 
     return waitForModules(byStoreName<T>(name), callback)

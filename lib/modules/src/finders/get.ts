@@ -1,4 +1,4 @@
-import { noopFalse } from '@revenge-mod/utils/callback'
+import { noop } from '@revenge-mod/utils/callback'
 import {
     lookupModule,
     lookupModuleByImportedPath,
@@ -35,7 +35,7 @@ export type GetModuleResult<
 
 export type GetModuleCallback<T> = (exports: T, id: Metro.ModuleID) => any
 
-export type GetModuleUnsubscribeFunction = () => boolean
+export type GetModuleUnsubscribeFunction = () => void
 
 /**
  * Get modules matching the filter.
@@ -89,13 +89,13 @@ export function getModule(
         const [exports, id] = lookupModule(filter, options!)
         if (id !== undefined) {
             callback(exports, id)
-            return noopFalse
+            return noop
         }
     } else
         for (const [exports, id] of lookupModules(filter, options!)) {
             callback(exports, id)
             max--
-            if (!max) return noopFalse
+            if (!max) return noop
         }
 
     const unsub = waitForModules(
@@ -133,7 +133,7 @@ export function getModuleByImportedPath<T>(
     const [exports, id] = lookupModuleByImportedPath(path)
     if (id !== undefined) {
         callback(exports, id)
-        return noopFalse
+        return noop
     }
 
     const unsub = waitForModuleByImportedPath(path, (exports, id) => {

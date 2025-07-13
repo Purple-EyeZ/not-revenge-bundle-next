@@ -4,7 +4,12 @@ import {
     unproxy,
 } from '../_internal'
 import type { HookNode, PatchedFunctionProxyState } from '../_internal'
-import type { BeforeHook, FiniteDomain, UnknownFunction } from '../types'
+import type {
+    BeforeHook,
+    FiniteDomain,
+    UnknownFunction,
+    UnpatchFunction,
+} from '../types'
 
 function unpatchBefore<T extends UnknownFunction>(
     state: PatchedFunctionProxyState<PropertyKey, T>,
@@ -63,12 +68,12 @@ function unpatchBefore<T extends UnknownFunction>(
 export function before<
     Parent extends Record<Key, UnknownFunction>,
     Key extends keyof Parent,
->(parent: Parent, key: Key, hook: BeforeHook<Parent[Key]>): () => void
+>(parent: Parent, key: Key, hook: BeforeHook<Parent[Key]>): UnpatchFunction
 export function before<Key extends PropertyKey, Value extends UnknownFunction>(
     parent: Record<Key, Value>,
     key: FiniteDomain<Key>,
     hook: BeforeHook<Value>,
-) {
+): UnpatchFunction {
     const target = parent[key]
 
     let state = patchedFunctionProxyStates.get(target)

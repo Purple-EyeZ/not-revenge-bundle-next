@@ -51,5 +51,5 @@ export let Constants: DiscordModules.Constants = proxify(
 
         if (module) return (Constants = module)
     },
-    { hint: 'object' },
+    { hint: {} },
 )!

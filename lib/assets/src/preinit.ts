@@ -1,14 +1,68 @@
 import { mInitializingId, mUninitialized } from '@revenge-mod/modules/_/metro'
-import { byName, byProps } from '@revenge-mod/modules/finders/filters'
+import {
+    byDependencies,
+    byName,
+    byProps,
+} from '@revenge-mod/modules/finders/filters'
+import {
+    lookupModule,
+    lookupModules,
+} from '@revenge-mod/modules/finders/lookup'
 import { waitForModules } from '@revenge-mod/modules/finders/wait'
 import { getModuleDependencies } from '@revenge-mod/modules/metro/utils'
+import { proxify } from '@revenge-mod/utils/proxy'
 import { aOverrides } from './_internal'
 import { cacheAsset, cached } from './caches'
 import type { ReactNative } from '@revenge-mod/react/types'
 import type { Asset, PackagerAsset } from './types'
 
-export let AssetsRegistry: ReactNative.AssetsRegistry
-export let AssetsRegistryModuleId: number
+const { relative } = byDependencies
+
+const [, _classCallCheckId] = lookupModule(byName('_classCallCheck'))
+const [, invariantId] = lookupModule(byName('invariant'))
+const [, _createClassId] = lookupModule(byName('_createClass'))
+
+// https://github.com/facebook/react-native/blob/main/packages/react-native/Libraries/Image/AssetSourceResolver.js
+const byAssetSourceResolver = byDependencies([
+    _classCallCheckId,
+    _createClassId,
+    relative(1),
+    relative(2),
+    undefined,
+    invariantId,
+])
+
+/**
+ * If you need to use this ID before assets-registry is initialized, interact with AssetsRegistry proxy first.
+ *
+ * ```js
+ * preinit() {
+ *   AssetsRegistry.getAssetByID(0)
+ *   // Module ID will now be set!
+ *   AssetsRegistryModuleId // ...
+ * }
+ * ```
+ */
+export let AssetsRegistryModuleId: number | undefined
+
+export let AssetsRegistry: ReactNative.AssetsRegistry = proxify(() => {
+    for (const [, id] of lookupModules(byDependencies([[]]), {
+        initialize: false,
+        uninitialized: true,
+    })) {
+        const deps = getModuleDependencies(id)!
+        if (deps.length !== 1) continue
+
+        // The module next to assets-registry is AssetSourceResolver
+        if (byAssetSourceResolver(deps[0] + 1)) {
+            const module = __r(id)
+            // ID will be set by the wait below
+            if (module?.registerAsset) return (AssetsRegistry = module)
+        }
+    }
+
+    throw new Error('assets-registry not found')
+})
 
 // Tracking/caching assets
 const unsubAR = waitForModules(

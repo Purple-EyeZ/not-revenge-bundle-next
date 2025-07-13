@@ -5,13 +5,13 @@
 
 import { Design } from '@revenge-mod/discord/design'
 import { useEffect, useState } from 'react'
-import type { MutableRefObject } from 'react'
+import type { RefObject } from 'react'
 import type { View } from 'react-native'
 
 const { useTooltip } = Design
 
 export let setEnablePluginTooltipVisible: ((v: boolean) => void) | undefined
-export const enableTooltipTarget: MutableRefObject<View | null> = {
+export const enableTooltipTarget: RefObject<View | null> = {
     current: null,
 }
 
@@ -40,7 +40,7 @@ export function EnablePluginTooltipProvider({
 }
 
 export let setEssentialPluginTooltipVisible: ((v: boolean) => void) | undefined
-export const essentialTooltipTarget: MutableRefObject<View | null> = {
+export const essentialTooltipTarget: RefObject<View | null> = {
     current: null,
 }
 

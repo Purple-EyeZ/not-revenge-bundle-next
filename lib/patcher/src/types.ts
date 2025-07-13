@@ -222,3 +222,5 @@ export type OverloadUnionNewableInner<
                 ConcreteNewable<Args, Return>
             >
       : never
+
+export type UnpatchFunction = () => void

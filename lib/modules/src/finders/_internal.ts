@@ -1,5 +1,6 @@
 import { getCurrentStack } from '@revenge-mod/utils/error'
 import { cacheFilterResultForId } from '../caches'
+import { mInitialized } from '../metro/_internal'
 import { isModuleExportBad } from '../metro/utils'
 import type { If } from '@revenge-mod/utils/types'
 import type { Metro } from '../types'
@@ -89,11 +90,15 @@ export function runFilter(
     if (exports === undefined) {
         if ((filter as Filter<any, false>)(id)) {
             if (options?.initialize ?? true) {
-                if (__BUILD_FLAG_DEBUG_MODULE_LOOKUPS__) {
-                    const flag = runFilter(filter, id, __r(id), options)
-                    if (!flag) DEBUG_warnPartialFilterMatch(id, filter.key)
-                    return flag
-                } else return runFilter(filter, id, __r(id), options)
+                const module = __r(id)
+                // Check if the required module is not blacklisted
+                if (mInitialized.has(id)) {
+                    if (__BUILD_FLAG_DEBUG_MODULE_LOOKUPS__) {
+                        const flag = runFilter(filter, id, module, options)
+                        if (!flag) DEBUG_warnPartialFilterMatch(id, filter.key)
+                        return flag
+                    } else return runFilter(filter, id, module, options)
+                } else return
             }
 
             return FilterResultFlags.Found

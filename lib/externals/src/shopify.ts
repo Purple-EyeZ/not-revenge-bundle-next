@@ -37,6 +37,6 @@ export let FlashList: typeof import('@shopify/flash-list') = proxify(
         if (module) return (FlashList = module)
     },
     {
-        hint: 'object',
+        hint: {},
     },
 )!

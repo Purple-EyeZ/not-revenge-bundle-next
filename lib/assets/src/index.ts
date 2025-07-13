@@ -11,13 +11,12 @@ import type {
 } from './types'
 
 export {
-    AssetsRegistry as AssetRegistry,
-    AssetsRegistryModuleId as AssetRegistryModuleId,
+    AssetsRegistry,
+    AssetsRegistryModuleId,
 } from './preinit'
 
 // iOS cannot display SVGs
 let _preferredType: Asset['type'] = Platform.OS === 'ios' ? 'png' : 'svg'
-
 /**
  * Set the preferred asset type. This is used to determine which asset to use when multiple types are available.
  *

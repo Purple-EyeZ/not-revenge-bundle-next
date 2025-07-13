@@ -1,5 +1,4 @@
 import {
-    isSettingsModulesLoaded,
     onSettingsModulesLoaded,
     refreshSettingsOverviewScreen,
 } from '@revenge-mod/discord/modules/settings'
@@ -37,11 +36,9 @@ registerPlugin<{ storage: Storage }>(
         start(api_) {
             api = api_
 
-            if (isSettingsModulesLoaded()) require('./utils').register()
-            else
-                onSettingsModulesLoaded(() => {
-                    require('./utils').register()
-                })
+            onSettingsModulesLoaded(() => {
+                require('./utils').register()
+            })
 
             if (api_.plugin.flags & PluginFlags.EnabledLate)
                 refreshSettingsOverviewScreen()
@@ -59,5 +56,5 @@ registerPlugin<{ storage: Storage }>(
     InternalPluginFlags.Internal,
 )
 
-// Expose to EvaluateJavaScriptSetting
+// Expose to EvalJSSetting
 export let api: PluginApi<{ storage: Storage }>

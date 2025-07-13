@@ -15,6 +15,7 @@ import type {
     FiniteDomain,
     InsteadHook,
     UnknownFunction,
+    UnpatchFunction,
 } from '../types'
 
 const insteadHookProxyHandler = {
@@ -110,12 +111,12 @@ function unpatchInstead<T extends UnknownFunction>(
 export function instead<
     Parent extends Record<Key, UnknownFunction>,
     Key extends keyof Parent,
->(parent: Parent, key: Key, hook: InsteadHook<Parent[Key]>): () => void
+>(parent: Parent, key: Key, hook: InsteadHook<Parent[Key]>): UnpatchFunction
 export function instead<Key extends PropertyKey, Value extends UnknownFunction>(
     parent: Record<Key, Value>,
     key: FiniteDomain<Key>,
     hook: InsteadHook<Value>,
-) {
+): UnpatchFunction {
     const target = parent[key]
 
     let state = patchedFunctionProxyStates.get(target)

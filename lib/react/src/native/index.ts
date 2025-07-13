@@ -1,4 +1,5 @@
 import { sAfterRunApplication, sBeforeRunApplication } from './patches'
+import type { RunApplicationCallback } from '@revenge-mod/react/types'
 
 /**
  * Registers a callback to be run when a call to {@link AppRegistry.runApplication} is made.
@@ -8,7 +9,9 @@ import { sAfterRunApplication, sBeforeRunApplication } from './patches'
  */
 export function onRunApplication(callback: RunApplicationCallback) {
     sBeforeRunApplication.add(callback)
-    return () => sBeforeRunApplication.delete(callback)
+    return () => {
+        sBeforeRunApplication.delete(callback)
+    }
 }
 
 /**
@@ -19,7 +22,7 @@ export function onRunApplication(callback: RunApplicationCallback) {
  */
 export function onRunApplicationFinished(callback: RunApplicationCallback) {
     sAfterRunApplication.add(callback)
-    return () => sAfterRunApplication.delete(callback)
+    return () => {
+        sAfterRunApplication.delete(callback)
+    }
 }
-
-export type RunApplicationCallback = () => any

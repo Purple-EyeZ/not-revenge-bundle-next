@@ -10,8 +10,11 @@ export const Initialized = 1 << 0
 const HasError = 1 << 1
 const HasImportedDefault = 1 << 2
 const HasImportedAll = 1 << 3
+const Initializing = 1 << 4
 
-const NotInitializedMask = ~Initialized
+const InitializedOrInitializing = Initialized | Initializing
+
+const NotInitializedOrInitializingMask = ~InitializedOrInitializing
 
 export const FlagKey = 0
 export const ModuleObjectKey = 1
@@ -27,13 +30,10 @@ export const metroRequire = (moduleId => {
     const flags = module[FlagKey]
     const moduleObject = module[ModuleObjectKey]
 
-    if (flags & Initialized) return moduleObject.exports
+    if (flags & InitializedOrInitializing) return moduleObject.exports
     if (flags & HasError) throw module[ErrorKey]
 
-    // Optimistically mark module as initialized before running the
-    // factory to keep any require cycles inside the factory from causing an
-    // infinite require loop.
-    module[FlagKey] |= Initialized
+    module[FlagKey] |= Initializing
     moduleObject.id = moduleId
 
     try {
@@ -42,9 +42,12 @@ export const metroRequire = (moduleId => {
 
         factory!()
 
+        module[FlagKey] =
+            (flags & NotInitializedOrInitializingMask) | Initialized
+
         return moduleObject.exports
     } catch (e) {
-        module[FlagKey] = (flags & NotInitializedMask) | HasError
+        module[FlagKey] = (flags & NotInitializedOrInitializingMask) | HasError
         module[ErrorKey] = e
         // @ts-expect-error: We never access this key again
         module[ModuleObjectKey] = undefined

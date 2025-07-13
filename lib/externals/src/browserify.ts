@@ -27,6 +27,6 @@ export let nodeUtil: typeof import('node:util') = proxify(
         if (module) return (nodeUtil = module)
     },
     {
-        hint: 'object',
+        hint: {},
     },
 )!

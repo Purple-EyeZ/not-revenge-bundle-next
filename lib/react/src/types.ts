@@ -21,3 +21,5 @@ export namespace ReactNative {
         getAssetByID(assetId: number): AssetsRegistry.PackagerAsset
     }
 }
+
+export type RunApplicationCallback = () => any

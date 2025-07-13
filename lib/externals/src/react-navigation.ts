@@ -36,7 +36,7 @@ export let ReactNavigationNative: typeof import('@react-navigation/native') =
             if (module) return (ReactNavigationNative = module)
         },
         {
-            hint: 'object',
+            hint: {},
         },
     )!
 
@@ -69,7 +69,7 @@ export let ReactNavigationStack: typeof import('@react-navigation/stack') =
             if (module) return (ReactNavigationStack = module)
         },
         {
-            hint: 'object',
+            hint: {},
         },
     )!
 

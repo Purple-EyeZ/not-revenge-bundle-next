@@ -489,7 +489,7 @@ export namespace DiscordModules {
         export type TableRowTrailingText = FC<TableRowTrailingTextProps>
 
         export interface AlertModalProps {
-            title: string
+            title?: ReactNode
             content?: ReactNode
             extraContent?: ReactNode
             actions?: ReactNode

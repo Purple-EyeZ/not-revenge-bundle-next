@@ -41,7 +41,7 @@ export let Design: Design = proxify(
         if (module) return (Design = module)
     },
     {
-        hint: 'object',
+        hint: {},
     },
 )!
 

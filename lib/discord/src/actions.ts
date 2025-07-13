@@ -48,7 +48,7 @@ export let ActionSheetActionCreators: DiscordModules.Actions.ActionSheetActionCr
             if (module) return (ActionSheetActionCreators = module)
         },
         {
-            hint: 'object',
+            hint: {},
         },
     )!
 
@@ -75,7 +75,7 @@ export let AlertActionCreators: DiscordModules.Actions.AlertActionCreators =
             if (module) return (AlertActionCreators = module)
         },
         {
-            hint: 'object',
+            hint: {},
         },
     )!
 

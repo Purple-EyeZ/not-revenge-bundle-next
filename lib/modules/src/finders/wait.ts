@@ -25,7 +25,7 @@ export interface BaseWaitForModulesOptions<All extends boolean = boolean> {
     all?: All
 }
 
-export type WaitForModulesUnsubscribeFunction = () => boolean
+export type WaitForModulesUnsubscribeFunction = () => void
 
 export type WaitForModulesCallback<T> = (exports: T, id: Metro.ModuleID) => any
 
@@ -82,7 +82,7 @@ export function waitForModules(
     filter: Filter,
     callback: WaitForModulesCallback<any>,
     options?: WaitForModulesOptions,
-) {
+): WaitForModulesUnsubscribeFunction {
     if (__BUILD_FLAG_DEBUG_MODULE_WAITS__)
         nativeLoggingHook(
             `\u001b[94mWaiting for module matching: \u001b[93m${filter.key}\u001b[0m`,
@@ -150,7 +150,7 @@ export function waitForModuleByImportedPath<T = any>(
     path: string,
     callback: WaitForModulesCallback<T>,
     options?: BaseWaitForModulesOptions,
-) {
+): WaitForModulesUnsubscribeFunction {
     const unsub = onModuleFinishedImporting(
         options?.all
             ? (id, cmpPath) => {

@@ -42,6 +42,6 @@ export let SettingListRenderer: SettingListRenderer = proxify(
         if (module) return (SettingListRenderer = module)
     },
     {
-        hint: 'object',
+        hint: {},
     },
 )!

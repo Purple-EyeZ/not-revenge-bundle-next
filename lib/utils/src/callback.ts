@@ -12,5 +12,4 @@ export function debounce<F extends (...args: any[]) => any>(
         })
 }
 
-export const noopFalse = () => false
 export const noop = () => {}

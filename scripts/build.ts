@@ -292,7 +292,7 @@ async function generateAssets() {
         promises.push(
             writeFile(
                 path2,
-                `import{registerAsset}from'@revenge-mod/assets';import uri from${uriPath};const ${name}=registerAsset({name:'${name}',type:${type},uri});export default ${name}`,
+                `import{registerAsset}from'@revenge-mod/assets';import uri from${uriPath};const ${name}=registerAsset({name:'${name}',type:${type},uri});export { ${name} as default }`,
             ),
         )
     }

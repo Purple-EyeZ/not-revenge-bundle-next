@@ -45,13 +45,13 @@ let ClipboardModule: typeof import('@react-native-clipboard/clipboard') =
             if (module) return (ClipboardModule = module)
         },
         {
-            hint: 'object',
+            hint: {},
         },
     )!
 
 export const { useClipboard } = destructure(ClipboardModule, {
-    hint: 'function',
+    hint: () => {},
 })
 export const { default: Clipboard } = destructure(ClipboardModule, {
-    hint: 'object',
+    hint: {},
 })

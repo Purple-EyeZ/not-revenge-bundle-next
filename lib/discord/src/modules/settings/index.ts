@@ -1,4 +1,5 @@
 import { ReactNavigationNative } from '@revenge-mod/externals/react-navigation'
+import { noop } from '@revenge-mod/utils/callback'
 import { findInTree } from '@revenge-mod/utils/tree'
 import { Constants } from '../../common'
 import { RootNavigationRef } from '../main_tabs_v2'
@@ -22,17 +23,23 @@ export function isSettingsModulesLoaded() {
  * Subscribes to when settings modules are loaded.
  * Plugins should ideally register their settings in the given callback to ensure fast startup time.
  *
+ * If settings modules are already loaded, the callback will be called immediately.
+ *
  * @param subcription The subscription function to call when the settings modules are loaded.
  * @returns A function to unsubscribe from the event.
- * @throws Throws an error if the settings modules are already loaded. Check with {@link isSettingsModulesLoaded} first.
  */
 export function onSettingsModulesLoaded(
     subcription: SettingsModulesLoadedSubscription,
 ) {
-    if (sData[2]) throw new Error('Settings modules already loaded')
+    if (isSettingsModulesLoaded()) {
+        subcription()
+        return noop
+    }
 
     sSubscriptions.add(subcription)
-    return () => sSubscriptions.delete(subcription)
+    return () => {
+        sSubscriptions.delete(subcription)
+    }
 }
 
 /**
@@ -44,7 +51,9 @@ export function onSettingsModulesLoaded(
  */
 export function registerSettingsSection(key: string, section: SettingsSection) {
     sData[0][key] = section
-    return () => delete sData[0][key]
+    return () => {
+        delete sData[0][key]
+    }
 }
 
 /**
@@ -56,7 +65,9 @@ export function registerSettingsSection(key: string, section: SettingsSection) {
  */
 export function registerSettingsItem(key: string, item: SettingsItem) {
     sData[1][key] = item
-    return () => delete sData[1][key]
+    return () => {
+        delete sData[1][key]
+    }
 }
 
 /**
@@ -68,9 +79,7 @@ export function registerSettingsItem(key: string, item: SettingsItem) {
 export function registerSettingsItems(record: Record<string, SettingsItem>) {
     Object.assign(sData[1], record)
     return () => {
-        let ret = true
-        for (const key in record) ret &&= delete sData[1][key]
-        return ret
+        for (const key in record) delete sData[1][key]
     }
 }
 
@@ -86,7 +95,9 @@ export function addSettingsItemToSection(key: string, item: string) {
     if (!section) throw new Error(`Section "${key}" does not exist`)
 
     const newLength = section.settings.push(item)
-    return () => delete section.settings[newLength - 1]
+    return () => {
+        delete section.settings[newLength - 1]
+    }
 }
 
 const { CommonActions, StackActions } = ReactNavigationNative
