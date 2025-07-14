@@ -32,38 +32,6 @@ const byAssetSourceResolver = byDependencies([
     invariantId,
 ])
 
-/**
- * If you need to use this ID before assets-registry is initialized, interact with AssetsRegistry proxy first.
- *
- * ```js
- * preinit() {
- *   AssetsRegistry.getAssetByID(0)
- *   // Module ID will now be set!
- *   AssetsRegistryModuleId // ...
- * }
- * ```
- */
-export let AssetsRegistryModuleId: number | undefined
-
-export let AssetsRegistry: ReactNative.AssetsRegistry = proxify(() => {
-    for (const [, id] of lookupModules(byDependencies([[]]), {
-        initialize: false,
-        uninitialized: true,
-    })) {
-        const deps = getModuleDependencies(id)!
-        if (deps.length !== 1) continue
-
-        // The module next to assets-registry is AssetSourceResolver
-        if (byAssetSourceResolver(deps[0] + 1)) {
-            const module = __r(id)
-            // ID will be set by the wait below
-            if (module?.registerAsset) return (AssetsRegistry = module)
-        }
-    }
-
-    throw new Error('assets-registry not found')
-})
-
 // Tracking/caching assets
 const unsubAR = waitForModules(
     byProps<ReactNative.AssetsRegistry>('registerAsset'),
@@ -112,6 +80,38 @@ const unsubAR = waitForModules(
         }
     },
 )
+
+/**
+ * If you need to use this ID before assets-registry is initialized, interact with AssetsRegistry proxy first.
+ *
+ * ```js
+ * preinit() {
+ *   AssetsRegistry.getAssetByID(0)
+ *   // Module ID will now be set!
+ *   AssetsRegistryModuleId // ...
+ * }
+ * ```
+ */
+export let AssetsRegistryModuleId: number | undefined
+
+export let AssetsRegistry: ReactNative.AssetsRegistry = proxify(() => {
+    for (const [, id] of lookupModules(byDependencies([[]]), {
+        initialize: false,
+        uninitialized: true,
+    })) {
+        const deps = getModuleDependencies(id)!
+        if (deps.length !== 1) continue
+
+        // The module next to assets-registry is AssetSourceResolver
+        if (byAssetSourceResolver(deps[0] + 1)) {
+            const module = __r(id)
+            // ID will be set by the wait below
+            if (module?.registerAsset) return (AssetsRegistry = module)
+        }
+    }
+
+    throw new Error('assets-registry not found')
+})
 
 // Asset overrides
 const unsubRAS = waitForModules(

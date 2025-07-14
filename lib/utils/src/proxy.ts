@@ -132,10 +132,11 @@ export function proxify<T>(signal: () => T, options?: ProxifyOptions): T {
         options?.cache ?? false,
     ])
 
-    if (__BUILD_FLAG_DEBUG_PROXIFIED_VALUES__) {
-        const v = unproxifyFromHint(hint)
-        if (v == null) DEBUG_warnNullishProxifiedValue()
-    }
+    if (__BUILD_FLAG_DEBUG_PROXIFIED_VALUES__)
+        (globalThis.setImmediate ?? ((x: () => void) => x()))(() => {
+            if (unproxifyFromHint(hint) == null)
+                DEBUG_warnNullishProxifiedValue()
+        })
 
     return new Proxy(hint, _handler) as T
 }
@@ -181,6 +182,17 @@ function unproxifyFromHint(hint: object) {
     return meta[0]() as any
 }
 
+export type DestructureOptions<T extends object> = {
+    [K in keyof T]?: ProxifyOptions
+}
+
+export type DestructureResult<
+    T extends object,
+    O extends DestructureOptions<T>,
+> = {
+    [K in keyof T]: O[K] extends ProxifyOptions ? T[K] : never
+}
+
 /**
  * Destructure a proxified value.
  *
@@ -208,25 +220,29 @@ function unproxifyFromHint(hint: object) {
  * z // TypeError: Cannot destructure and proxify null (reading 'z')
  * ```
  */
-export function destructure<T extends object>(
-    proxified: T,
-    options?: ProxifyOptions,
-): T {
+export function destructure<
+    T extends object,
+    const O extends DestructureOptions<T>,
+>(proxified: T, options?: O): DestructureResult<T, O> {
     return new Proxy({} as T, {
         get: (_, p, r) =>
-            proxify(() => {
-                const v = Reflect.get(unproxify(proxified), p, r)
+            proxify(
+                () => {
+                    const v = Reflect.get(unproxify(proxified), p, r)
 
-                if (v == null)
+                    if (v == null)
+                        throw new TypeError(
+                            `Cannot destructure and proxify ${v} (reading '${String(p)}')`,
+                        )
+                    if (typeof v === 'function' || typeof v === 'object')
+                        return v
                     throw new TypeError(
-                        `Cannot destructure and proxify ${v} (reading '${String(p)}')`,
+                        `Cannot destructure and proxify a primitive (reading '${String(p)}')`,
                     )
-                if (typeof v === 'function' || typeof v === 'object') return v
-                throw new TypeError(
-                    `Cannot destructure and proxify a primitive (reading '${String(p)}')`,
-                )
-            }, options),
-    })
+                },
+                options?.[p as keyof T],
+            ),
+    }) as DestructureResult<T, O>
 }
 
 /**
