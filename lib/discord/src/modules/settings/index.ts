@@ -4,7 +4,7 @@ import { findInTree } from '@revenge-mod/utils/tree'
 import { Constants } from '../../common'
 import { RootNavigationRef } from '../main_tabs_v2'
 import { sData, sSubscriptions } from './_internal'
-import type { NavigationState } from '@react-navigation/core'
+import type { NavigationState, PartialState } from '@react-navigation/core'
 import type { DiscordModules } from '../../types'
 
 export type SettingsItem = DiscordModules.Modules.Settings.SettingsItem
@@ -143,9 +143,12 @@ export async function refreshSettingsOverviewScreen(renavigate?: boolean) {
 
         navigation.navigate(mainState.routes[mainState.index].name)
 
-        // Dispatch on next paint
+        // Wait for navigation to complete and reset to the settings state
         requestAnimationFrame(() => {
-            navigation.dispatch(CommonActions.reset(settingsState))
+            navigation.reset({
+                index: settingsState.routes.length - 1,
+                routes: settingsState.routes,
+            } as PartialState<typeof settingsState>)
         })
     } else {
         const {

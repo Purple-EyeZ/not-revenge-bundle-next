@@ -33,7 +33,6 @@ const {
     TableSwitchRow,
 } = Design
 
-// TODO(plugins/settings): Add filter options
 export default function FilterAndSortActionSheet({
     filters,
     filter,

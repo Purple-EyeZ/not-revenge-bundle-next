@@ -24,6 +24,7 @@ const events = new TypedEventEmitter<{
     errored: [unknown]
 }>()
 
+// TODO(PalmDevs): This currently returns undefined because it is ran too early
 const CircleXIcon = lookupGeneratedIconComponent(
     'CircleXIcon',
     'CircleXIcon-secondary',

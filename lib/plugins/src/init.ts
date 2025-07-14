@@ -17,6 +17,8 @@ for (const plugin of pList.values())
 const unsub = onRunApplication(() => {
     unsub()
 
+    require('~/plugins/start')
+
     for (const plugin of pList.values())
         if (plugin.flags & PluginFlags.Enabled) startPlugin(plugin)
 })
