@@ -27,7 +27,7 @@ jobs:
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
           restore-keys: |
             ${{ runner.os }}-bun-
-              
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -58,3 +58,17 @@ jobs:
           name: revenge-bundle
           path: dist/revenge.bundle
           if-no-files-found: error
+
+      - name: Create Release on Main Push
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          TAG_NAME="manual-release-$(date +'%Y%m%d-%H%M%S')-${SHORT_SHA}"
+
+          gh release create "$TAG_NAME" \
+            --repo ${{ github.repository }} \
+            --title "Manual Build (${SHORT_SHA})" \
+            --notes "Manual release triggered by push to main. Commit: ${{ github.sha }}" \
+            dist/revenge.bundle
