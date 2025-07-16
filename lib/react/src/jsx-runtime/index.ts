@@ -1,5 +1,5 @@
 import { jPatches } from './_internal'
-import type { ElementType, Key, ReactElement } from 'react'
+import type { ElementType, JSX, Key, ReactElement } from 'react'
 import type { ReactJSXRuntime } from '..'
 
 export type AnyJSXFactoryFunction = (typeof ReactJSXRuntime)['jsx' | 'jsxs']
@@ -21,7 +21,9 @@ type ElementTypeProps<E extends ElementType> = E extends ElementType<
     infer Props
 >
     ? Props
-    : never
+    : E extends keyof JSX.IntrinsicElements
+      ? JSX.IntrinsicElements[E]
+      : never
 
 /**
  * Registers a hook to be called after a JSX element with the specified type is created.

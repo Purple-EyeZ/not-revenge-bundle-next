@@ -1,11 +1,11 @@
-import type { ElementType } from 'react'
+import type { ElementType, JSX } from 'react'
 import type { AfterJSXCallback, BeforeJSXCallback, InsteadJSXCallback } from '.'
 
 export const jPatches = new Map<
-    ElementType | string,
+    ElementType | keyof JSX.IntrinsicElements,
     [
-        before?: Set<BeforeJSXCallback>,
-        after?: Set<AfterJSXCallback>,
-        instead?: Set<InsteadJSXCallback>,
+        before?: Set<BeforeJSXCallback<any>>,
+        after?: Set<AfterJSXCallback<any>>,
+        instead?: Set<InsteadJSXCallback<any>>,
     ]
 >()

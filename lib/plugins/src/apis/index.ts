@@ -2,6 +2,7 @@ import * as patcher from '@revenge-mod/patcher'
 import * as storage from '@revenge-mod/storage'
 import { modules } from './modules'
 import { plugins } from './plugins'
+import { react } from './react'
 import type {
     UnscopedInitPluginApi,
     UnscopedPluginApi,
@@ -16,5 +17,6 @@ export const pUnscopedApi:
     modules,
     patcher,
     plugins,
+    react,
     storage,
 }
