@@ -1,12 +1,13 @@
 import RevengeIcon from '~assets/RevengeIcon'
 // TODO(PalmDevs): switch to external fetches
 import Data from './data.json'
-import type { AssetId } from '@revenge-mod/assets/types'
+import type { ImageSourcePropType } from 'react-native'
 
+// TODO(PalmDevs): possibly fetch from external source?
 export const Badges = {
     revenge_team: {
         label: 'Revenge Team',
-        description: 'This user is a member of the Revenge team.',
+        description: 'This user is a Revenge team member.',
         icon: RevengeIcon,
         bnw: true,
         showDialog: true,
@@ -17,7 +18,7 @@ export const UsersWithBadges = Data as Record<string, BadgeId[]>
 
 export type Badge = {
     label: string
-    icon: AssetId
+    icon: ImageSourcePropType
     description: string
     /**
      * Black and white icon

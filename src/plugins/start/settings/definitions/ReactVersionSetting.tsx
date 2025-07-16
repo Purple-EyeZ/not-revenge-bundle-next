@@ -1,14 +1,16 @@
 import TableRowAssetIcon from '@revenge-mod/components/TableRowAssetIcon'
 import { version } from 'react'
 import { Setting } from '../constants'
+import { CopyableSetting } from './shared'
 import type { SettingsItem } from '@revenge-mod/discord/modules/settings'
 
-const ReactVersionSetting: SettingsItem = {
-    parent: Setting.Revenge,
-    IconComponent: () => <TableRowAssetIcon name="ScienceIcon" />,
-    title: () => 'React',
-    useDescription: () => version,
-    type: 'static',
-}
+const ReactVersionSetting: SettingsItem = CopyableSetting(
+    {
+        parent: Setting.Revenge,
+        IconComponent: () => <TableRowAssetIcon name="ScienceIcon" />,
+        title: () => 'React',
+    },
+    () => version,
+)
 
 export default ReactVersionSetting

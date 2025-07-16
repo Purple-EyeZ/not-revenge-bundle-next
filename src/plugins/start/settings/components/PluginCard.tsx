@@ -65,17 +65,15 @@ export function InstalledPluginCard({
     const enabled = Boolean(flags & PluginFlags.Enabled)
     const styles_ = usePluginCardStyles()
 
-    const settingsRef = useClickOutside<View>(
-        () =>
-            enableTooltipTarget.current === settingsRef.current &&
-            setEnablePluginTooltipVisible?.(false),
-    )
+    const settingsRef = useClickOutside<View>(() => {
+        if (enableTooltipTarget.current === settingsRef.current)
+            setEnablePluginTooltipVisible?.(false)
+    })
 
-    const switchRef = useClickOutside<View>(
-        () =>
-            essentialTooltipTarget.current === switchRef.current &&
-            setEssentialPluginTooltipVisible?.(false),
-    )
+    const switchRef = useClickOutside<View>(() => {
+        if (essentialTooltipTarget.current === switchRef.current)
+            setEssentialPluginTooltipVisible?.(false)
+    })
 
     return (
         <Card style={[styles_.card, styles.grow, rightGap && styles_.rightGap]}>
@@ -102,8 +100,11 @@ export function InstalledPluginCard({
                             e.stopPropagation()
                             resetTooltips()
 
-                            enableTooltipTarget.current = settingsRef.current
-                            setEnablePluginTooltipVisible?.(true)
+                            requestAnimationFrame(() => {
+                                enableTooltipTarget.current =
+                                    settingsRef.current
+                                setEnablePluginTooltipVisible?.(true)
+                            })
                         }}
                     >
                         <IconButton
@@ -124,8 +125,11 @@ export function InstalledPluginCard({
                             e.stopPropagation()
                             resetTooltips()
 
-                            essentialTooltipTarget.current = switchRef.current
-                            setEssentialPluginTooltipVisible?.(true)
+                            requestAnimationFrame(() => {
+                                essentialTooltipTarget.current =
+                                    switchRef.current
+                                setEssentialPluginTooltipVisible?.(true)
+                            })
                         }
                     }}
                     ref={switchRef}
