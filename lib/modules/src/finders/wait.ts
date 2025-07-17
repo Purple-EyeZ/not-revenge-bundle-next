@@ -1,4 +1,4 @@
-import { mInitialized } from '../metro/_internal'
+import { mInitialized } from '../metro/patches'
 import {
     onAnyModuleInitialized,
     onModuleFinishedImporting,

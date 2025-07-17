@@ -43,13 +43,14 @@ registerPlugin<{ storage: Storage }>(
             if (api_.plugin.flags & PluginFlags.EnabledLate)
                 refreshSettingsOverviewScreen()
 
-            api_.cleanup(refreshSettingsOverviewScreen)
-
             Promise.all([import('./react-devtools'), api.storage.get()]).then(
                 ([rdt, settings]) => {
                     if (settings.devtools.autoConnect) rdt.connect()
                 },
             )
+        },
+        stop() {
+            refreshSettingsOverviewScreen()
         },
     },
     PluginFlags.Enabled,

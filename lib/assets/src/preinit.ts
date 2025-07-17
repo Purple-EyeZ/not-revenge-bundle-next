@@ -1,4 +1,3 @@
-import { mInitializingId, mUninitialized } from '@revenge-mod/modules/_/metro'
 import {
     byDependencies,
     byName,
@@ -9,6 +8,10 @@ import {
     lookupModules,
 } from '@revenge-mod/modules/finders/lookup'
 import { waitForModules } from '@revenge-mod/modules/finders/wait'
+import {
+    mInitializingId,
+    mUninitialized,
+} from '@revenge-mod/modules/metro/patches'
 import { getModuleDependencies } from '@revenge-mod/modules/metro/utils'
 import { proxify } from '@revenge-mod/utils/proxy'
 import { aOverrides } from './_internal'

@@ -1,4 +1,4 @@
-import { mInitialized } from '../metro/_internal'
+import { mInitialized } from '../metro/patches'
 import { getModuleDependencies, isModuleInitialized } from '../metro/utils'
 import type { If, LogicalOr } from '@revenge-mod/utils/types'
 import type { Metro } from '../types'
@@ -98,7 +98,7 @@ export type ByProps = FilterGenerator<
  */
 export const byProps = createFilterGenerator<Parameters<ByProps>>(
     (props, _, exports) => {
-        if (typeof exports === 'object' || typeof exports === 'function') {
+        if (exports instanceof Object) {
             for (const prop of props) {
                 if (prop in exports) continue
                 return false
@@ -127,7 +127,7 @@ export type WithoutProps = FilterGenerator<
  */
 export const withoutProps = createFilterGenerator<Parameters<WithoutProps>>(
     (props, _, exports) => {
-        if (typeof exports === 'object' || typeof exports === 'function')
+        if (exports instanceof Object)
             for (const prop of props) if (prop in exports) return false
 
         return true
@@ -152,7 +152,7 @@ export type BySingleProp = FilterGenerator<
  */
 export const bySingleProp = createFilterGenerator<Parameters<BySingleProp>>(
     ([prop], _, exports) => {
-        if (typeof exports === 'object' && prop in exports) {
+        if (exports instanceof Object && prop in exports) {
             let hasMultipleProperties = false
             for (const _ in exports) {
                 if (hasMultipleProperties) return false

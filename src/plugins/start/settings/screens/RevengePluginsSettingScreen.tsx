@@ -208,8 +208,9 @@ function PluginMasonryFlashList({
             ListEmptyComponent={NoPlugins}
             renderItem={({ item: [plugin, iflags], columnIndex }) => (
                 <InstalledPluginCard
-                    iflags={iflags}
                     key={plugin.manifest.id}
+                    enabled={Boolean(plugin.flags & PluginFlags.Enabled)}
+                    iflags={iflags}
                     plugin={plugin}
                     rightGap={columnIndex + 1 < numColumns}
                 />

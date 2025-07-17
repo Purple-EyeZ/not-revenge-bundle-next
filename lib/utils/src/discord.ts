@@ -1,12 +1,19 @@
 import { getAssetByName } from '@revenge-mod/assets'
 import { TokensModuleId } from '@revenge-mod/discord/common'
-import { byDependencies, byProps } from '@revenge-mod/modules/finders/filters'
+import {
+    byDependencies,
+    createFilterGenerator,
+} from '@revenge-mod/modules/finders/filters'
 import { lookupModule } from '@revenge-mod/modules/finders/lookup'
 import {
     ReactJSXRuntimeModuleId,
     ReactModuleId,
     ReactNativeModuleId,
 } from '@revenge-mod/react'
+import type {
+    Filter,
+    FilterGenerator,
+} from '@revenge-mod/modules/finders/filters'
 import type { FC } from 'react'
 
 // [React, ReactJsxRuntime, (Tokens), (BaseIconImage), (Asset), 2]
@@ -31,36 +38,117 @@ const MultiIconComponentFilterBase = [
     undefined,
 ]
 
-// TODO(utils/discord/lookupGeneratedIconComponent): Make this into a filter?
-export function lookupGeneratedIconComponent<N extends string>(
-    compName: N,
-    ...assetNames: string[]
-) {
-    const icon = lookupModule(byProps(compName))[0]?.[compName]
-    if (icon) return icon
+export type ByGeneratedIconComponent = FilterGenerator<
+    <N extends string>(
+        name: N,
+        ...assets: string[]
+    ) => Filter<{ [K in N]: FC<any> }>
+>
 
-    let filter = IconComponentFilter
+/**
+ * Filter by icon component name and asset names.
+ *
+ * **Make sure to set `uninitialized: true` when using this filter in `lookupModule`!**
+ *
+ * @param names The component name, then the asset names if the component has multiple assets. *
+ * @example
+ * ```ts
+ * const [CopyIconModule] = lookupModule(
+ *   byGeneratedIconComponent('CopyIcon'),
+ *   {
+ *     uninitialized: true,
+ *   }
+ * )
+ * if (CopyIconModule) {
+ *   const { CopyIcon } = CopyIconModule
+ *   // Use CopyIcon as a React component
+ * }
+ * ```
+ * @example
+ * ```ts
+ * const [CircleXIconModule] = lookupModule(
+ *   byGeneratedIconComponent(
+ *     'CircleXIcon',
+ *     'CircleXIcon-secondary',
+ *     'CircleXIcon-primary',
+ *   ),
+ *   {
+ *    uninitialized: true,
+ *   }
+ * )
+ * ```
+ */
+export const byGeneratedIconComponent = createFilterGenerator<
+    Parameters<ByGeneratedIconComponent>
+>(
+    (names, id, exports) => {
+        if (exports instanceof Object) {
+            if (exports[names[0]] instanceof Function) {
+                let hasMultipleProps = false
+                for (const _ in exports) {
+                    if (hasMultipleProps) return false
+                    hasMultipleProps = true
+                }
 
-    if (assetNames.length) {
-        const mids = []
+                return true
+            }
+        } else {
+            let filter = IconComponentFilter
 
-        for (const name of assetNames) {
-            const mid = getAssetByName(name)?.moduleId
-            if (!mid) return
+            if (names.length > 1) {
+                const mids = []
 
-            mids.push(mid)
+                for (let i = 1; i < names.length; i++) {
+                    const name = names[i]
+                    const mid = getAssetByName(name)?.moduleId
+                    if (!mid) {
+                        if (__DEV__) warnUnregisteredAsset(name)
+                        return false
+                    }
+
+                    mids.push(mid)
+                }
+
+                filter = [...MultiIconComponentFilterBase, ...mids, 2]
+            } else {
+                const [name] = names
+
+                const mid = getAssetByName(name)?.moduleId
+                if (!mid) {
+                    if (__DEV__) warnUnregisteredAsset(name)
+                    return false
+                }
+
+                IconComponentFilter[4] = mid
+            }
+
+            return byDependencies(filter)(id, exports)
         }
 
-        filter = [...MultiIconComponentFilterBase, ...mids, 2]
-    } else {
-        const mid = getAssetByName(compName)?.moduleId
-        if (!mid) return
+        return false
+    },
+    names => `revenge.byGeneratedIconComponent(${names.join(',')})`,
+) as ByGeneratedIconComponent
 
-        IconComponentFilter[4] = mid
-    }
-
-    return lookupModule(byDependencies<{ [K in N]: FC }>(filter), {
-        initialized: false,
+/**
+ * Looks up a generated icon component by its name and asset names.
+ *
+ * @param names The component name, then the asset names if the component has multiple assets.
+ * @returns The icon component, or `undefined` if it could not be found.
+ */
+export function lookupGeneratedIconComponent<N extends string>(
+    ...names: [N, ...string[]]
+) {
+    const [module] = lookupModule(byGeneratedIconComponent(...names), {
         uninitialized: true,
-    })[0]?.[compName]
+    })
+
+    return module?.[names[0]] as FC<any> | undefined
+}
+
+function warnUnregisteredAsset(name: string) {
+    nativeLoggingHook(
+        `\u001b[31mAsset "${name}" is not registered. Cannot get module ID to filter by.\u001b[0m`,
+        2,
+    )
 }

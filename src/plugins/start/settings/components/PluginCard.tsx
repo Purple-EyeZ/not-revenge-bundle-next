@@ -7,13 +7,9 @@ import {
     enablePlugin,
     InternalPluginFlags,
     initPlugin,
-    pEmitter,
     preInitPlugin,
     startPlugin,
 } from '@revenge-mod/plugins/_'
-import { PluginFlags } from '@revenge-mod/plugins/constants'
-import { useReRender } from '@revenge-mod/utils/react'
-import { useEffect } from 'react'
 import { Image, Pressable } from 'react-native'
 import { useClickOutside } from 'react-native-click-outside'
 import { navigatePluginSettings } from '../utils'
@@ -35,34 +31,19 @@ const SettingsIcon = getAssetIdByName('SettingsIcon', 'png')!
 export function InstalledPluginCard({
     plugin,
     iflags,
+    enabled,
     rightGap,
 }: {
     plugin: InternalPlugin
     iflags: number
+    enabled: boolean
     rightGap?: boolean
 }) {
     const {
-        manifest: { id, name, description, author, icon },
-        flags,
+        manifest: { name, description, author, icon },
     } = plugin
 
-    // Re-render on plugin enable/disable
-    const reRender = useReRender()
-    useEffect(() => {
-        const listener = (p: InternalPlugin) =>
-            id === p.manifest.id && reRender()
-
-        pEmitter.on('disabled', listener)
-        pEmitter.on('enabled', listener)
-
-        return () => {
-            pEmitter.off('disabled', listener)
-            pEmitter.off('enabled', listener)
-        }
-    })
-
     const essential = Boolean(iflags & InternalPluginFlags.Essential)
-    const enabled = Boolean(flags & PluginFlags.Enabled)
     const styles_ = usePluginCardStyles()
 
     const settingsRef = useClickOutside<View>(() => {

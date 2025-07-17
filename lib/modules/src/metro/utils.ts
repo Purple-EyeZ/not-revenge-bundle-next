@@ -1,6 +1,6 @@
 import { isProxy } from '@revenge-mod/utils/proxy'
-import { mDeps, mList } from './_internal'
 import { FlagKey, Initialized, ModuleObjectKey } from './custom'
+import { mDeps, mList } from './patches'
 import type { Metro } from '../types'
 
 /**
@@ -11,7 +11,7 @@ import type { Metro } from '../types'
 export function getModuleDependencies(
     id: Metro.ModuleID,
 ): Metro.DependencyMap | undefined {
-    return mDeps[id]
+    return mDeps.get(id)
 }
 
 /**

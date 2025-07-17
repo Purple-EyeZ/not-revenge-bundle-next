@@ -11,7 +11,7 @@ const RDTVersionSetting: SettingsItem = CopyableSetting(
         title: () => 'React DevTools',
         usePredicate: () => RDTContext.active,
     },
-    () => __REACT_DEVTOOLS__!.version,
+    () => String(__REACT_DEVTOOLS__!.version),
 )
 
 export default RDTVersionSetting

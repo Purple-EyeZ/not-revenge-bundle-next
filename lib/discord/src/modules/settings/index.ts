@@ -112,7 +112,7 @@ export async function refreshSettingsOverviewScreen(renavigate?: boolean) {
     const navigation = RootNavigationRef.getRootNavigationRef()
     if (!navigation.isReady()) return false
 
-    const state = navigation.getState()
+    const state = navigation.getRootState()
 
     // State with SettingsOverviewScreen
     const settingsState = findInTree(

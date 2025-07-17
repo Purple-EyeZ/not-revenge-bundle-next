@@ -6,7 +6,7 @@ import {
     mInitialized,
     mList,
     mUninitialized,
-} from '../metro/_internal'
+} from '../metro/patches'
 import {
     getInitializedModuleExports,
     isModuleInitialized,

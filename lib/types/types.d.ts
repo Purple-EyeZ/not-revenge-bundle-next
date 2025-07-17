@@ -74,7 +74,7 @@ declare global {
     var __REACT_DEVTOOLS_GLOBAL_HOOK__: unknown | undefined
     var __REACT_DEVTOOLS__:
         | {
-              version: string
+              version: number
               exports: {
                   connectToDevTools(opts: {
                       host?: string

@@ -11,6 +11,7 @@ import RDTConnectSetting from './definitions/RDTConnectSetting'
 import RDTDisconnectSetting from './definitions/RDTDisconnectSetting'
 import RDTVersionSetting from './definitions/RDTVersionSetting'
 import RevengeDeveloperSetting from './definitions/RevengeDeveloperSetting'
+import TestErrorBoundarySetting from './definitions/TestErrorBoundarySetting'
 
 export function register() {
     api.cleanup(
@@ -22,6 +23,7 @@ export function register() {
             [Setting.RDTDisconnect]: RDTDisconnectSetting,
             [Setting.EvalJS]: EvalJSSetting,
             [Setting.AssetBrowser]: AssetBrowserSetting,
+            [Setting.TestErrorBoundary]: TestErrorBoundarySetting,
         }),
         addSettingsItemToSection('REVENGE', Setting.RevengeDeveloper),
     )

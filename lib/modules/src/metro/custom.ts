@@ -3,7 +3,7 @@
  * Making initialization faster and use less resources.
  */
 
-import { mList } from './_internal'
+import { mList } from './patches'
 import type { Metro } from '../types'
 
 export const Initialized = 1 << 0

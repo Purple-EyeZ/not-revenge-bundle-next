@@ -18,6 +18,9 @@
     "./metro/subscriptions": {
       "default": "./src/metro/subscriptions/index.ts"
     },
+    "./metro/patches": {
+      "default": "./src/metro/patches.ts"
+    },
     "./metro/utils": {
       "default": "./src/metro/utils.ts"
     },
@@ -26,9 +29,6 @@
     },
     "./types": {
       "types": "./src/types.ts"
-    },
-    "./_/metro": {
-      "default": "./src/metro/_internal.ts"
     }
   }
 }

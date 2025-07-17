@@ -6,6 +6,7 @@ import type {
     PressableProps,
     TextInputProps as RNTextInputProps,
     TextProps as RNTextProps,
+    StyleProp,
     TextStyle,
     View,
     ViewProps,
@@ -343,7 +344,7 @@ export namespace DiscordModules {
             isClearable?: boolean
 
             size?: TextFieldSize
-            style?: ViewStyle | ViewStyle[]
+            style?: StyleProp<ViewStyle>
         }
 
         export type TextFieldSize = 'sm' | 'md' | 'lg'
@@ -519,7 +520,7 @@ export namespace DiscordModules {
         export interface TextProps extends RNTextProps {
             variant?: Styles.TextVariant
             color?: string
-            style?: TextStyle
+            style?: StyleProp<TextStyle>
             lineClamp?: number
             ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip'
             tabularNumbers?: boolean
