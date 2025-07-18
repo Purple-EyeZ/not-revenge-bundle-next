@@ -110,31 +110,17 @@ const { CommonActions, StackActions } = ReactNavigationNative
  */
 export async function refreshSettingsOverviewScreen(renavigate?: boolean) {
     const navigation = RootNavigationRef.getRootNavigationRef()
-    if (!navigation.isReady()) return false
+    if (!navigation.isReady()) return
 
-    const state = navigation.getRootState()
-
+    let state = navigation.getRootState()
     // State with SettingsOverviewScreen
-    const settingsState = findInTree(
-        state,
-        (node): node is NavigationState =>
-            Array.isArray(node.routes) &&
-            node.routes[0]?.name ===
-                (Constants.UserSettingsSections as Record<string, string>)
-                    .OVERVIEW,
-    )
-
+    let settingsState = findInTree(state, isNavigationSettingsState)
     // We're currently not on the settings screen, so we don't need to reset
-    if (!settingsState) return false
+    if (!settingsState) return
 
     if (renavigate) {
-        const mainState = findInTree(
-            state,
-            (node): node is NavigationState =>
-                Array.isArray(node.routes) && node.routes.length > 1,
-        )
-
-        if (!mainState) return false
+        const mainState = findInTree(state, isNavigationMainState)
+        if (!mainState) return
 
         navigation.dispatch({
             ...CommonActions.goBack(),
@@ -146,22 +132,39 @@ export async function refreshSettingsOverviewScreen(renavigate?: boolean) {
         // Wait for navigation to complete and reset to the settings state
         requestAnimationFrame(() => {
             navigation.reset({
-                index: settingsState.routes.length - 1,
-                routes: settingsState.routes,
-            } as PartialState<typeof settingsState>)
+                index: settingsState!.routes.length - 1,
+                routes: settingsState!.routes,
+            } as PartialState<NonNullable<typeof settingsState>>)
         })
     } else {
-        const {
-            key: target,
-            routes: [{ name, key: source }],
-        } = settingsState
+        requestAnimationFrame(() => {
+            // Get updated state
+            state = navigation.getRootState()
+            settingsState = findInTree(state, isNavigationSettingsState)
+            if (!settingsState) return
 
-        navigation.dispatch({
-            ...StackActions.replace(name),
-            source,
-            target,
+            const {
+                key: target,
+                routes: [{ name, key: source }],
+            } = settingsState
+
+            navigation.dispatch({
+                ...StackActions.replace(name),
+                source,
+                target,
+            })
         })
     }
+}
 
-    return true
+function isNavigationMainState(state: any): state is NavigationState {
+    return Array.isArray(state.routes) && state.routes.length > 1
+}
+
+function isNavigationSettingsState(state: any): state is NavigationState {
+    return (
+        Array.isArray(state.routes) &&
+        state.routes[0]?.name ===
+            (Constants.UserSettingsSections as Record<string, string>).OVERVIEW
+    )
 }

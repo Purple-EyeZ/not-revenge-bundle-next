@@ -13,7 +13,7 @@ registerPlugin(
     {
         id: 'revenge.no-track',
         name: 'No Track',
-        description: "Disables Discord's analytics/tracking, and Sentry.",
+        description: 'Disables Discord and Sentry analytics.',
         author: 'Revenge',
         icon: 'AnalyticsIcon',
     },

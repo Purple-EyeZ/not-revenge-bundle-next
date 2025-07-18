@@ -7,7 +7,7 @@ const TestErrorBoundarySetting: SettingsItem = {
     type: 'route',
     variant: 'danger',
     IconComponent: () => (
-        <TableRowAssetIcon name="CircleXIcon" variant="danger" />
+        <TableRowAssetIcon name="ScreenXIcon" variant="danger" />
     ),
     title: () => 'Test ErrorBoundary',
     screen: {

@@ -16,7 +16,7 @@ registerPlugin(
     {
         id: 'revenge.settings',
         name: 'Settings',
-        description: 'Settings menus for Revenge',
+        description: 'Settings UI for Revenge.',
         author: 'Revenge',
         icon: 'SettingsIcon',
     },

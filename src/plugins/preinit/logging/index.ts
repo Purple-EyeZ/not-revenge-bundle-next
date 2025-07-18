@@ -14,7 +14,7 @@ if (__DEV__) {
         {
             id: 'revenge.logging',
             name: 'Logging',
-            description: "Extra logging for Revenge's internal modules",
+            description: 'Logs assisting Revenge developers.',
             author: 'Revenge',
             icon: 'PaperIcon',
         },

@@ -10,9 +10,9 @@ registerPlugin(
     {
         id: 'revenge.error-boundary',
         name: 'Error Boundary',
-        description: "Wraps Discord's Error Boundary to show more details.",
+        description: 'Shows debug information on rendering crashes.',
         author: 'Revenge',
-        icon: 'CircleXIcon',
+        icon: 'ScreenXIcon',
     },
     {
         start({ cleanup }) {
