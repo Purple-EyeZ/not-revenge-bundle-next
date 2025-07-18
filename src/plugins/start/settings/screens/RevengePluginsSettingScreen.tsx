@@ -109,7 +109,10 @@ function Screen() {
         () =>
             [...pList.values()].map(
                 plugin =>
-                    [plugin, pMetadata.get(plugin.manifest.id)![2]] as const,
+                    [
+                        plugin,
+                        pMetadata.get(plugin.manifest.id)!.iflags,
+                    ] as const,
             ),
         [],
     )

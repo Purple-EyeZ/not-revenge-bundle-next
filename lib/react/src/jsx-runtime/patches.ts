@@ -14,7 +14,7 @@ const patch = (
     const patches = jPatches.get(type)
     if (!patches) return Reflect.apply(orig, ReactJSXRuntime, args)
 
-    const [before, after, instead] = patches
+    const { before, after, instead } = patches
 
     if (before) for (const cb of before) args = cb(args)
 

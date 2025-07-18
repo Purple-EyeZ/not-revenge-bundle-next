@@ -36,12 +36,12 @@ export const pEmitter = new TypedEventEmitter<{
 export const pList = new Map<PluginManifest['id'], InternalPlugin>()
 export const pMetadata = new Map<
     PluginManifest['id'],
-    [
-        api: PreInitPluginApi | InitPluginApi | PluginApi | undefined,
-        promises: Promise<void>[],
-        iflags: number,
-        apiLevel: number,
-    ]
+    {
+        api: PreInitPluginApi | InitPluginApi | PluginApi | undefined
+        promises: Promise<void>[]
+        iflags: number
+        apiLevel: number
+    }
 >()
 
 export function registerPlugin<O extends PluginApiExtensionsOptions>(
@@ -71,7 +71,12 @@ export function registerPlugin<O extends PluginApiExtensionsOptions>(
         stop: () => stopPlugin(plugin),
     }
 
-    pMetadata.set(manifest.id, [undefined, [], iflags, PluginApiLevel.None])
+    pMetadata.set(manifest.id, {
+        api: undefined,
+        promises: [],
+        iflags,
+        apiLevel: PluginApiLevel.None,
+    })
     pList.set(manifest.id, plugin)
 
     pEmitter.emit('register', plugin, options)
@@ -80,7 +85,7 @@ export function registerPlugin<O extends PluginApiExtensionsOptions>(
 function handlePluginError(e: unknown, plugin: InternalPlugin) {
     plugin.errors.push(e)
     plugin.flags |= Flag.Errored
-    const [api, , iflags] = pMetadata.get(plugin.manifest.id)!
+    const { api, iflags } = pMetadata.get(plugin.manifest.id)!
 
     ;(api as InitPluginApi).logger.error('Plugin encountered an error', e)
     nativeLoggingHook(
@@ -100,7 +105,7 @@ function preparePluginPreInit(plugin: InternalPlugin) {
     plugin.errors = []
     plugin.status &= ~Flag.Errored
 
-    const api = (meta[0] = {
+    const api = (meta.api = {
         cleanup: (...items) => {
             plugin._c.push(...items)
         },
@@ -109,28 +114,28 @@ function preparePluginPreInit(plugin: InternalPlugin) {
     })
 
     pEmitter.emit('preInit', plugin, api)
-    meta[3] = PluginApiLevel.PreInit
+    meta.apiLevel = PluginApiLevel.PreInit
 }
 
 function preparePluginInit(plugin: InternalPlugin) {
     const meta = pMetadata.get(plugin.manifest.id)!
 
-    pEmitter.emit('init', plugin, meta[0] as InitPluginApi)
-    meta[3] = PluginApiLevel.Init
+    pEmitter.emit('init', plugin, meta.api as InitPluginApi)
+    meta.apiLevel = PluginApiLevel.Init
 }
 
 function preparePluginStart(plugin: InternalPlugin) {
     const meta = pMetadata.get(plugin.manifest.id)!
 
-    pEmitter.emit('start', plugin, meta[0] as PluginApi)
-    meta[3] = PluginApiLevel.Start
+    pEmitter.emit('start', plugin, meta.api as PluginApi)
+    meta.apiLevel = PluginApiLevel.Start
 }
 
 async function disablePlugin(plugin: InternalPlugin) {
     if (!(plugin.flags & Flag.Enabled))
         throw new Error(`Plugin "${plugin.manifest.id}" is not enabled`)
 
-    const iflags = pMetadata.get(plugin.manifest.id)![2] ?? 0
+    const iflags = pMetadata.get(plugin.manifest.id)!.iflags ?? 0
     if (iflags & InternalPluginFlags.Essential)
         throw new Error(
             `Plugin "${plugin.manifest.id}" is essential and cannot be disabled`,
@@ -166,7 +171,7 @@ export async function preInitPlugin(plugin: InternalPlugin) {
         if (!lifecycles.preInit) return
 
         const meta = pMetadata.get(id)!
-        const [, promises] = meta
+        const { promises } = meta
 
         if (!(plugin.flags & Flag.Enabled))
             throw new Error(`Plugin "${id}" is not enabled`)
@@ -180,7 +185,7 @@ export async function preInitPlugin(plugin: InternalPlugin) {
         plugin.status |= Status.PreIniting
 
         try {
-            const prom = lifecycles.preInit(meta[0] as PreInitPluginApi)
+            const prom = lifecycles.preInit(meta.api as PreInitPluginApi)
             promises.push(prom)
             await prom
 
@@ -205,7 +210,7 @@ export async function initPlugin(plugin: InternalPlugin) {
         if (!lifecycles.init) return
 
         const meta = pMetadata.get(id)!
-        const [, promises, , apiLevel] = meta
+        const { promises, apiLevel } = meta
 
         if (!(plugin.flags & Flag.Enabled))
             throw new Error(`Plugin "${id}" is not enabled`)
@@ -220,7 +225,7 @@ export async function initPlugin(plugin: InternalPlugin) {
         plugin.status |= Status.Initing
 
         try {
-            const prom = lifecycles.init(meta[0] as InitPluginApi)
+            const prom = lifecycles.init(meta.api as InitPluginApi)
             promises.push(prom)
             await prom
 
@@ -245,7 +250,7 @@ export async function startPlugin(plugin: InternalPlugin) {
         if (!lifecycles.start) return
 
         const meta = pMetadata.get(id)!
-        const [, promises, , apiLevel] = meta
+        const { promises, apiLevel } = meta
 
         if (!(plugin.flags & Flag.Enabled))
             throw new Error(`Plugin "${id}" is not enabled`)
@@ -261,7 +266,7 @@ export async function startPlugin(plugin: InternalPlugin) {
         plugin.status |= Status.Starting
 
         try {
-            const prom = lifecycles.start(meta[0] as PluginApi)
+            const prom = lifecycles.start(meta.api as PluginApi)
             promises.push(prom)
             await prom
 
@@ -284,7 +289,7 @@ export async function stopPlugin(plugin: InternalPlugin) {
         lifecycles,
     } = plugin
     const meta = pMetadata.get(id)!
-    const [, promises, iflags, apiLevel] = meta
+    const { promises, iflags, apiLevel } = meta
 
     if (iflags & InternalPluginFlags.Essential)
         throw new Error(`Plugin "${id}" is essential and cannot be stopped`)
@@ -326,7 +331,7 @@ export async function stopPlugin(plugin: InternalPlugin) {
         if (!lifecycles.stop) return
 
         await Promise.race([
-            lifecycles.stop(meta[0] as PluginApi),
+            lifecycles.stop(meta.api as PluginApi),
             sleepReject(
                 MaxWaitTime,
                 'Plugin stop lifecycle timed out, force stopping',
@@ -360,11 +365,11 @@ export async function stopPlugin(plugin: InternalPlugin) {
         }
 
         // Reset APIs
-        meta[0] = undefined
-        meta[3] = PluginApiLevel.None
+        meta.api = undefined
+        meta.apiLevel = PluginApiLevel.None
 
         // Clear temp data
-        meta[1] = []
+        meta.promises = []
         plugin._c = []
 
         // Reset status

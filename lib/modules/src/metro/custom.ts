@@ -13,44 +13,34 @@ const HasImportedAll = 1 << 3
 const Initializing = 1 << 4
 
 const InitializedOrInitializing = Initialized | Initializing
-
 const NotInitializedOrInitializingMask = ~InitializedOrInitializing
-
-export const FlagKey = 0
-export const ModuleObjectKey = 1
-const FactoryKey = 2
-const ImportedDefaultKey = 3
-const ImportedAllKey = 4
-const ErrorKey = 5
 
 export const global = globalThis
 
 export const metroRequire = (moduleId => {
-    const module = mList.get(moduleId)!
-    const flags = module[FlagKey]
-    const moduleObject = module[ModuleObjectKey]
+    const mod = mList.get(moduleId)!
+    const { flags, module: moduleObject } = mod
 
     if (flags & InitializedOrInitializing) return moduleObject.exports
-    if (flags & HasError) throw module[ErrorKey]
+    if (flags & HasError) throw mod.error
 
-    module[FlagKey] |= Initializing
+    mod.flags |= Initializing
     moduleObject.id = moduleId
 
     try {
-        const factory = module[FactoryKey]
-        module[FactoryKey] = undefined
+        const { factory } = mod
+        mod.factory = undefined
 
         factory!()
 
-        module[FlagKey] =
-            (flags & NotInitializedOrInitializingMask) | Initialized
+        mod.flags = (flags & NotInitializedOrInitializingMask) | Initialized
 
         return moduleObject.exports
     } catch (e) {
-        module[FlagKey] = (flags & NotInitializedOrInitializingMask) | HasError
-        module[ErrorKey] = e
+        mod.flags = (flags & NotInitializedOrInitializingMask) | HasError
+        mod.error = e
         // @ts-expect-error: We never access this key again
-        module[ModuleObjectKey] = undefined
+        mod.module = undefined
 
         // @ts-expect-error: Not documented, but used by React Native
         if (global.ErrorUtils) global.ErrorUtils.reportFatalError(e)
@@ -62,20 +52,20 @@ global.__r = metroRequire
 
 export const metroImportDefault: Metro.RequireFn = moduleId => {
     const mod = mList.get(moduleId)!
-    if (mod[FlagKey] & HasImportedDefault) return mod[ImportedDefaultKey]
+    if (mod.flags & HasImportedDefault) return mod.importedDefault
 
     const exports = metroRequire(moduleId)
-    return (mod[ImportedDefaultKey] = exports?.__esModule
+    return (mod.importedDefault = exports?.__esModule
         ? exports.default
         : exports)
 }
 
 export const metroImportAll: Metro.RequireFn = moduleId => {
     const mod = mList.get(moduleId)!
-    if (mod[FlagKey] & HasImportedAll) return mod[ImportedAllKey]
+    if (mod.flags & HasImportedAll) return mod.importedAll
 
     const exports = metroRequire(moduleId)
     if (!exports?.__esModule) exports.default = exports
 
-    return (mod[ImportedAllKey] = exports)
+    return (mod.importedAll = exports)
 }

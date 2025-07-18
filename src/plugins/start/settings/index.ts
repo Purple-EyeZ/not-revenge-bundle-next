@@ -1,4 +1,9 @@
-import { sData, sSubscriptions } from '@revenge-mod/discord/_/modules/settings'
+import {
+    sConfig,
+    sData,
+    sSections,
+    sSubscriptions,
+} from '@revenge-mod/discord/_/modules/settings'
 import { onSettingsModulesLoaded } from '@revenge-mod/discord/modules/settings'
 import { byName, byProps } from '@revenge-mod/modules/finders/filters'
 import { waitForModules } from '@revenge-mod/modules/finders/wait'
@@ -45,7 +50,7 @@ registerPlugin(
 
                     // We don't ever need to call this again
                     sSubscriptions.clear()
-                    sData[2] = true
+                    sData.loaded = true
 
                     let ORIGINAL_RENDERER_CONFIG =
                         SettingRendererConfig.SETTING_RENDERER_CONFIG
@@ -57,7 +62,7 @@ registerPlugin(
                             get: () =>
                                 ({
                                     ...ORIGINAL_RENDERER_CONFIG,
-                                    ...sData[1],
+                                    ...sConfig,
                                 }) as Record<string, SettingsItem>,
                             set: v => (ORIGINAL_RENDERER_CONFIG = v),
                         },
@@ -70,7 +75,7 @@ registerPlugin(
                 exports => {
                     unsubSOS()
 
-                    const customSections = sData[0]
+                    const customSections = sSections
 
                     after(exports as { default: FC }, 'default', tree => {
                         const {

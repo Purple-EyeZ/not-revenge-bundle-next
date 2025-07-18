@@ -39,7 +39,12 @@ export function getProxyTarget(obj: object) {
 
 const _metas = new WeakMap<
     object,
-    [factory: () => unknown, bind: boolean, cacheable: boolean, cache?: unknown]
+    {
+        factory: () => unknown
+        bind: boolean
+        cacheable: boolean
+        cache?: unknown
+    }
 >()
 
 const _handler = {
@@ -56,7 +61,7 @@ const _handler = {
         const target = unproxifyFromHint(hint)
         const val = Reflect.get(target!, p, recv)
 
-        if (_metas.get(hint)![1] && typeof val === 'function')
+        if (_metas.get(hint)?.bind && val instanceof Function)
             return new Proxy(val, {
                 // If thisArg happens to be a proxified value, we will use the target object instead
                 apply: (fn, thisArg, args) =>
@@ -126,11 +131,11 @@ export function proxify<T>(signal: () => T, options?: ProxifyOptions): T {
     // biome-ignore lint/complexity/useArrowFunction: We need a function with a constructor
     const hint = options?.hint ?? function () {}
 
-    _metas.set(hint, [
-        signal,
-        options?.bindMethods ?? false,
-        options?.cache ?? false,
-    ])
+    _metas.set(hint, {
+        factory: signal,
+        bind: options?.bindMethods ?? false,
+        cacheable: options?.cache ?? false,
+    })
 
     if (__BUILD_FLAG_DEBUG_PROXIFIED_VALUES__)
         (globalThis.setImmediate ?? ((x: () => void) => x()))(() => {
@@ -178,8 +183,9 @@ export function unproxify<T extends object>(proxified: T): T {
 
 function unproxifyFromHint(hint: object) {
     const meta = _metas.get(hint)!
-    if (meta[1]) return meta[2] ?? ((meta[3] = meta[0]()) as any)
-    return meta[0]() as any
+    if (meta.cacheable)
+        return meta.cache ?? ((meta.cache = meta.factory()) as any)
+    return meta.factory() as any
 }
 
 export type DestructureOptions<T extends object> = {

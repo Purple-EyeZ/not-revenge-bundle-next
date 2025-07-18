@@ -38,16 +38,16 @@ const metroDefine = (
 
     const moduleObject = { exports: {} }
 
-    mList.set(id, [
-        0,
-        moduleObject,
-        () => {
+    mList.set(id, {
+        flags: 0,
+        module: moduleObject,
+        factory: () => {
             handleFactoryCall(factory, moduleObject)
         },
-        undefined, // Imported default
-        undefined, // Imported all
-        undefined, // Error
-    ])
+        importedDefault: undefined,
+        importedAll: undefined,
+        error: undefined,
+    })
 }
 
 /**

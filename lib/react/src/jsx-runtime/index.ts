@@ -38,11 +38,11 @@ export function afterJSX<E extends ElementType>(
 ) {
     let patches = jPatches.get(type)
     if (!patches) {
-        patches = [undefined, new Set(), undefined]
+        patches = {}
         jPatches.set(type, patches)
-    } else if (!patches[1]) patches[1] = new Set()
+    }
 
-    const set = patches[1]!
+    const set = (patches.after ??= new Set())
 
     set.add(patch as AfterJSXCallback<E>)
     return () => {
@@ -65,11 +65,11 @@ export function beforeJSX<E extends ElementType>(
 ) {
     let patches = jPatches.get(type)
     if (!patches) {
-        patches = [new Set(), undefined, undefined]
+        patches = {}
         jPatches.set(type, patches)
-    } else if (!patches[0]) patches[0] = new Set()
+    }
 
-    const set = patches[0]!
+    const set = (patches.before ??= new Set())
 
     set.add(patch as BeforeJSXCallback<E>)
     return () => {
@@ -92,11 +92,11 @@ export function insteadJSX<E extends ElementType>(
 ) {
     let patches = jPatches.get(type)
     if (!patches) {
-        patches = [undefined, undefined, new Set()]
+        patches = {}
         jPatches.set(type, patches)
-    } else if (!patches[2]) patches[2] = new Set()
+    }
 
-    const set = patches[2]!
+    const set = (patches.instead ??= new Set())
 
     set.add(patch as InsteadJSXCallback<E>)
     return () => {
@@ -108,6 +108,7 @@ export function insteadJSX<E extends ElementType>(
 
 function attemptCleanup(type: ElementType) {
     const patches = jPatches.get(type)!
-    if (patches[0]?.size || patches[1]?.size || patches[2]?.size) return
+    if (patches.before?.size || patches.after?.size || patches.instead?.size)
+        return
     jPatches.delete(type)
 }

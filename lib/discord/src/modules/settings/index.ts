@@ -3,7 +3,7 @@ import { noop } from '@revenge-mod/utils/callback'
 import { findInTree } from '@revenge-mod/utils/tree'
 import { Constants } from '../../common'
 import { RootNavigationRef } from '../main_tabs_v2'
-import { sData, sSubscriptions } from './_internal'
+import { sConfig, sData, sSections, sSubscriptions } from './_internal'
 import type { NavigationState, PartialState } from '@react-navigation/core'
 import type { DiscordModules } from '../../types'
 
@@ -16,7 +16,7 @@ export type SettingsModulesLoadedSubscription = () => void
  * Checks if the settings modules are loaded.
  */
 export function isSettingsModulesLoaded() {
-    return sData[2]
+    return sData.loaded
 }
 
 /**
@@ -50,9 +50,9 @@ export function onSettingsModulesLoaded(
  * @returns A function to unregister the settings section.
  */
 export function registerSettingsSection(key: string, section: SettingsSection) {
-    sData[0][key] = section
+    sSections[key] = section
     return () => {
-        delete sData[0][key]
+        delete sSections[key]
     }
 }
 
@@ -64,9 +64,9 @@ export function registerSettingsSection(key: string, section: SettingsSection) {
  * @returns A function to unregister the settings item.
  */
 export function registerSettingsItem(key: string, item: SettingsItem) {
-    sData[1][key] = item
+    sConfig[key] = item
     return () => {
-        delete sData[1][key]
+        delete sConfig[key]
     }
 }
 
@@ -77,9 +77,9 @@ export function registerSettingsItem(key: string, item: SettingsItem) {
  * @returns A function to unregister the settings items.
  */
 export function registerSettingsItems(record: Record<string, SettingsItem>) {
-    Object.assign(sData[1], record)
+    Object.assign(sConfig, record)
     return () => {
-        for (const key in record) delete sData[1][key]
+        for (const key in record) delete sConfig[key]
     }
 }
 
@@ -91,7 +91,7 @@ export function registerSettingsItems(record: Record<string, SettingsItem>) {
  * @returns A function to remove the settings item from the section.
  */
 export function addSettingsItemToSection(key: string, item: string) {
-    const section = sData[0][key]
+    const section = sSections[key]
     if (!section) throw new Error(`Section "${key}" does not exist`)
 
     const newLength = section.settings.push(item)

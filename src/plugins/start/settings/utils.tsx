@@ -16,7 +16,7 @@ const { NavigatorHeader } = Design
 // TODO(plugins/settings): Register a custom route instead, so plugin "settings" can actually be pinned and navigated to without hassle.
 // This would require us to implement the event-based plugin management system first, so we can listen to plugin enable/disable events and update the settings accordingly.
 export function navigatePluginSettings(plugin: Plugin) {
-    const [api] = pMetadata.get(plugin.manifest.id)!
+    const { api } = pMetadata.get(plugin.manifest.id)!
     const navigation =
         RootNavigationRef.getRootNavigationRef<ReactNavigationParamList>()
     if (!navigation.isReady()) return

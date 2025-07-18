@@ -1,5 +1,5 @@
 import { isProxy } from '@revenge-mod/utils/proxy'
-import { FlagKey, Initialized, ModuleObjectKey } from './custom'
+import { Initialized } from './custom'
 import { mDeps, mList } from './patches'
 import type { Metro } from '../types'
 
@@ -20,7 +20,7 @@ export function getModuleDependencies(
  * @returns Non-zero number if the module is initialized, `0` if it is not initialized or does not exist.
  */
 export function isModuleInitialized(id: Metro.ModuleID): number | undefined {
-    return mList.get(id)?.[FlagKey]! & Initialized
+    return mList.get(id)?.flags! & Initialized
 }
 
 /**
@@ -34,7 +34,7 @@ export function isModuleInitialized(id: Metro.ModuleID): number | undefined {
 export function getInitializedModuleExports(
     id: Metro.ModuleID,
 ): Metro.ModuleExports | undefined {
-    return mList.get(id)?.[ModuleObjectKey]?.exports
+    return mList.get(id)?.module?.exports
 }
 
 /**

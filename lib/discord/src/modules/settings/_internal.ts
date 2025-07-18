@@ -4,16 +4,15 @@ import type {
     SettingsSection,
 } from '.'
 
-export const sData = [
-    // Sections to splice in the SettingsOverviewScreen
-    {},
-    // SETTING_RENDERER_CONFIG settings
-    {},
-    false,
-] as [
-    sections: Record<string, SettingsSection>,
-    config: Record<string, SettingsItem>,
-    loaded: boolean,
-]
+// Sections to splice in the SettingsOverviewScreen
+export const sSections: Record<string, SettingsSection> = {}
+// SETTING_RENDERER_CONFIG settings
+export const sConfig: Record<string, SettingsItem> = {}
+
+export const sData = {
+    loaded: false,
+} as {
+    loaded: boolean
+}
 
 export const sSubscriptions = new Set<SettingsModulesLoadedSubscription>()
