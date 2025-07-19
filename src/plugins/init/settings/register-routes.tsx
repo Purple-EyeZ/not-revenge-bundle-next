@@ -1,24 +1,15 @@
-import { getAssetIdByName } from '@revenge-mod/assets'
 import TableRowAssetIcon from '@revenge-mod/components/TableRowAssetIcon'
-import { Tokens } from '@revenge-mod/discord/common'
-import { Stores } from '@revenge-mod/discord/common/flux'
-import { Design } from '@revenge-mod/discord/design'
 import { registerSettingsItem } from '@revenge-mod/discord/modules/settings'
 import { pEmitter, pMetadata } from '@revenge-mod/plugins/_'
-import { useLayoutEffect } from 'react'
-import { Image } from 'react-native'
+import { lazy, useLayoutEffect } from 'react'
 import { Setting } from './constants'
 import type { StackScreenProps } from '@react-navigation/stack'
-import type { DiscordModules } from '@revenge-mod/discord/types'
 import type { ReactNavigationParamList } from '@revenge-mod/externals/react-navigation'
 import type { PluginApi } from '@revenge-mod/plugins/types'
 
-const { NavigatorHeader } = Design
-const { default: tokens } = Tokens
-
-const ThemeStore = Stores.ThemeStore as DiscordModules.Flux.Store<{
-    theme: string
-}>
+const NavigatorHeaderWithIcon = lazy(
+    () => import('./components/NavigatorHeaderWithIcon'),
+)
 
 pEmitter.on('started', plugin => {
     if (plugin.SettingsComponent) {
@@ -62,34 +53,8 @@ pEmitter.on('started', plugin => {
                     getComponent: () => PluginSettings,
                 },
             }),
+            // TODO(PalmDevs): In the future, we may allow pinning plugin settings, so we'll need this cleanup
+            // () => refreshSettingsOverviewScreen(),
         )
     }
 })
-
-function NavigatorHeaderWithIcon({
-    title,
-    icon,
-}: {
-    title: string
-    icon?: string
-}) {
-    return (
-        <NavigatorHeader
-            icon={
-                <Image
-                    style={{
-                        width: 24,
-                        height: 24,
-                        marginEnd: 8,
-                        tintColor: tokens.internal.resolveSemanticColor(
-                            ThemeStore.theme,
-                            tokens.colors.HEADER_PRIMARY,
-                        ),
-                    }}
-                    source={getAssetIdByName(icon!)}
-                />
-            }
-            title={title}
-        />
-    )
-}

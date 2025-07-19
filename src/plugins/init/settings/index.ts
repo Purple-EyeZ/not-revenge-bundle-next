@@ -13,7 +13,7 @@ import { PluginFlags } from '@revenge-mod/plugins/constants'
 import type { SettingsItem } from '@revenge-mod/discord/modules/settings'
 import type { FC } from 'react'
 
-import './routes'
+import './register-routes'
 
 onSettingsModulesLoaded(() => {
     require('./register')
@@ -28,7 +28,7 @@ registerPlugin(
         icon: 'SettingsIcon',
     },
     {
-        start({ logger }) {
+        start() {
             const unsubRC = waitForModules(
                 byProps<{
                     SETTING_RENDERER_CONFIG: Record<string, SettingsItem>
@@ -36,19 +36,10 @@ registerPlugin(
                 SettingRendererConfig => {
                     unsubRC()
 
-                    logger.info(
-                        'Settings modules loaded, running subscriptions and patching...',
-                    )
-
                     for (const sub of sSubscriptions)
                         try {
                             sub()
-                        } catch (e) {
-                            logger.error(
-                                'Failed to run settings modules subscription',
-                                e,
-                            )
-                        }
+                        } catch {}
 
                     // We don't ever need to call this again
                     sSubscriptions.clear()
@@ -97,19 +88,15 @@ registerPlugin(
                         if (!firstCustomSection) return tree
 
                         // Check if sections are already spliced
-                        const firstCustomItem = firstCustomSection.settings[0]
+                        const [firstCustomItem] = firstCustomSection.settings
                         if (
                             sections.findIndex(section =>
-                                section.settings.some(
-                                    setting => setting === firstCustomItem,
-                                ),
-                            ) !== -1
+                                section.settings.includes(firstCustomItem),
+                            ) < 0
                         )
-                            return tree
-
-                        for (const section of Object.values(customSections))
-                            if (!section.index) sections.unshift(section)
-                            else sections.splice(section.index, 0, section)
+                            for (const section of Object.values(customSections))
+                                if (!section.index) sections.unshift(section)
+                                else sections.splice(section.index, 0, section)
 
                         return tree
                     })

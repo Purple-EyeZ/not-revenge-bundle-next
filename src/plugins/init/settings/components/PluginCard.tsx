@@ -3,6 +3,7 @@ import { styles } from '@revenge-mod/components/_'
 import FormSwitch from '@revenge-mod/components/FormSwitch'
 import { Tokens } from '@revenge-mod/discord/common'
 import { Design } from '@revenge-mod/discord/design'
+import { RootNavigationRef } from '@revenge-mod/discord/modules/main_tabs_v2'
 import {
     enablePlugin,
     InternalPluginFlags,
@@ -12,7 +13,6 @@ import {
 } from '@revenge-mod/plugins/_'
 import { Image, Pressable } from 'react-native'
 import { useClickOutside } from 'react-native-click-outside'
-import { navigatePluginSettings } from '../utils'
 import {
     enableTooltipTarget,
     essentialTooltipTarget,
@@ -94,7 +94,9 @@ export function InstalledPluginCard({
                             variant="secondary"
                             icon={SettingsIcon}
                             onPress={() => {
-                                navigatePluginSettings(plugin)
+                                RootNavigationRef.getRootNavigationRef().navigate(
+                                    plugin.manifest.id,
+                                )
                             }}
                             disabled={!enabled}
                         />

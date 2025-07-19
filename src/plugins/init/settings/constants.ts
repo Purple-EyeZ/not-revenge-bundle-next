@@ -3,8 +3,6 @@ export const Setting = {
 
     Revenge: 'Revenge',
     RevengePlugins: 'RevengePlugins',
-    RevengeThemes: 'RevengeThemes',
-    RevengeFonts: 'RevengeFonts',
 
     // SUBSETTINGS
 
@@ -22,6 +20,4 @@ export const Setting = {
 export const RouteNames = {
     [Setting.Revenge]: 'Revenge',
     [Setting.RevengePlugins]: 'Revenge Plugins',
-    [Setting.RevengeThemes]: 'Revenge Themes',
-    [Setting.RevengeFonts]: 'Revenge Fonts',
 } as const
