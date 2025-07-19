@@ -9,7 +9,6 @@ import ReactNativeVersionSetting from './definitions/ReactNativeVersionSetting'
 // import RevengeFontsSetting from './definitions/RevengeFontsSetting'
 import ReactVersionSetting from './definitions/ReactVersionSetting'
 import ReloadSetting from './definitions/ReloadSetting'
-import RevengeCustomPageSetting from './definitions/RevengeCustomPageSetting'
 import RevengeDiscordSetting from './definitions/RevengeDiscordSetting'
 import RevengeLicenseSetting from './definitions/RevengeLicenseSetting'
 import RevengePluginsSetting from './definitions/RevengePluginsSetting'
@@ -22,7 +21,6 @@ registerSettingsItems({
     [Setting.RevengePlugins]: RevengePluginsSetting,
     // [MobileSetting.REVENGE_THEMES]: RevengeThemesSetting,
     // [MobileSetting.REVENGE_FONTS]: RevengeFontsSetting,
-    [Setting.RevengeCustomPage]: RevengeCustomPageSetting,
     [Setting.RevengeSourceRepository]: RevengeSourceRepositorySetting,
     [Setting.RevengeLicense]: RevengeLicenseSetting,
     [Setting.RevengeDiscord]: RevengeDiscordSetting,

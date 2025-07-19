@@ -1,4 +1,6 @@
 import { EventEmitter } from 'node:events'
+import type { StackScreenProps } from '@react-navigation/stack'
+import type { ReactNavigationParamList } from '@revenge-mod/externals/react-navigation'
 import type { ComponentProps, ComponentType, FC, JSX, ReactNode } from 'react'
 import type {
     ImageSourcePropType,
@@ -614,7 +616,12 @@ export namespace DiscordModules {
 
             export interface RouteSettingsItem extends BaseSettingsItem {
                 type: 'route'
-                screen: { route: string; getComponent(): ComponentType }
+                screen: {
+                    route: string
+                    getComponent(): ComponentType<
+                        StackScreenProps<ReactNavigationParamList>
+                    >
+                }
             }
 
             export interface StaticSettingsItem extends BaseSettingsItem {

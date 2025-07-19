@@ -13,6 +13,8 @@ import { PluginFlags } from '@revenge-mod/plugins/constants'
 import type { SettingsItem } from '@revenge-mod/discord/modules/settings'
 import type { FC } from 'react'
 
+import './routes'
+
 onSettingsModulesLoaded(() => {
     require('./register')
 })

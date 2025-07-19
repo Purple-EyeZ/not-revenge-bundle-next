@@ -7,7 +7,10 @@ import type { InternalPlugin } from '@revenge-mod/plugins/_'
 export interface FilterAndSortActionSheetProps {
     filters: Record<
         string,
-        [icon: AssetId, (p: InternalPlugin, iflags: number) => boolean]
+        {
+            icon: AssetId
+            filter: (p: InternalPlugin, iflags: number) => boolean
+        }
     >
     filter: string[]
     setFilter: (filters: string[]) => void
@@ -54,7 +57,7 @@ export default function FilterAndSortActionSheet({
         <ActionSheet>
             <BottomSheetTitleHeader title="Filter & Sort" />
             <TableRowGroup title="Filter by">
-                {Object.entries(filters).map(([label, [icon]]) => {
+                {Object.entries(filters).map(([label, { icon }]) => {
                     const checked = filter_.includes(label)
 
                     return (
