@@ -6,11 +6,14 @@
     "./constants": {
       "default": "./src/constants.ts"
     },
+    "./preinit": {
+      "default": "./src/preinit.ts"
+    },
     "./init": {
       "default": "./src/init.ts"
     },
-    "./preinit": {
-      "default": "./src/preinit.ts"
+    "./start": {
+      "default": "./src/start.ts"
     },
     "./types": {
       "types": "./src/types.ts"

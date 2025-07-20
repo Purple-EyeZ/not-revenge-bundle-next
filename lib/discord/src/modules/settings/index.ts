@@ -2,8 +2,9 @@ import { ReactNavigationNative } from '@revenge-mod/externals/react-navigation'
 import { noop } from '@revenge-mod/utils/callback'
 import { findInTree } from '@revenge-mod/utils/tree'
 import { Constants } from '../../common'
+import { sLoaded } from '../../start'
 import { RootNavigationRef } from '../main_tabs_v2'
-import { sConfig, sData, sSections, sSubscriptions } from './_internal'
+import { sConfig, sSections, sSubscriptions } from './_internal'
 import type { NavigationState, PartialState } from '@react-navigation/core'
 import type { DiscordModules } from '../../types'
 
@@ -16,7 +17,7 @@ export type SettingsModulesLoadedSubscription = () => void
  * Checks if the settings modules are loaded.
  */
 export function isSettingsModulesLoaded() {
-    return sData.loaded
+    return sLoaded
 }
 
 /**

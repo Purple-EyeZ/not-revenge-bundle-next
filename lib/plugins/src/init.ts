@@ -1,6 +1,5 @@
 import * as AssetsLibrary from '@revenge-mod/assets'
-import { onRunApplication } from '@revenge-mod/react/native'
-import { initPlugin, pList, startPlugin } from './_internal'
+import { initPlugin, pList } from './_internal'
 import { pUnscopedApi } from './apis'
 import { PluginFlags } from './constants'
 import type { UnscopedInitPluginApi } from './types'
@@ -11,12 +10,3 @@ uapi.assets = AssetsLibrary
 
 for (const plugin of pList.values())
     if (plugin.flags & PluginFlags.Enabled) initPlugin(plugin)
-
-const unsub = onRunApplication(() => {
-    unsub()
-
-    require('~/plugins/start')
-
-    for (const plugin of pList.values())
-        if (plugin.flags & PluginFlags.Enabled) startPlugin(plugin)
-})

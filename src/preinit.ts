@@ -30,24 +30,11 @@ onModuleFirstRequired(IndexModuleId, function onIndexRequired() {
         require('@revenge-mod/plugins/preinit')
 
         onModuleInitialized(IndexModuleId, function onIndexInitialized() {
+            if (__DEV__)
+                nativeLoggingHook(`\u001b[31m--- INIT STAGE ---\u001b[0m`, 1)
+
             try {
-                if (__DEV__)
-                    nativeLoggingHook(
-                        `\u001b[31m--- INIT STAGE ---\u001b[0m`,
-                        1,
-                    )
-
-                // Initialize init libraries
-                require('@revenge-mod/utils/init')
-                require('@revenge-mod/react/init')
-                require('@revenge-mod/storage/init')
-                require('@revenge-mod/externals/init')
-                require('@revenge-mod/discord/init')
-                require('@revenge-mod/components/init')
-
-                // Run all init plugins
-                require('~/plugins/init')
-                require('@revenge-mod/plugins/init')
+                require('./init')
             } catch (e) {
                 onError(e)
             }
@@ -57,7 +44,7 @@ onModuleFirstRequired(IndexModuleId, function onIndexRequired() {
     }
 })
 
-function onError(e: unknown) {
+export function onError(e: unknown) {
     // TODO(init): Move to use native provided alert function, which will accept a string stack trace
     // Above will reduce the need for runCatching() to exist, as the code won't be able to be deduped any further
     const { ClientInfoModule, DeviceModule } =

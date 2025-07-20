@@ -30,6 +30,9 @@
     "./preinit": {
       "default": "./src/preinit.ts"
     },
+    "./start": {
+      "default": "./src/start.ts"
+    },
     "./modules/main_tabs_v2": {
       "default": "./src/modules/main_tabs_v2.ts"
     },

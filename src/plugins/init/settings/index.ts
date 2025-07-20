@@ -1,20 +1,15 @@
-import {
-    sConfig,
-    sData,
-    sSections,
-    sSubscriptions,
-} from '@revenge-mod/discord/_/modules/settings'
+import { sSections } from '@revenge-mod/discord/_/modules/settings'
 import { onSettingsModulesLoaded } from '@revenge-mod/discord/modules/settings'
-import { byName, byProps } from '@revenge-mod/modules/finders/filters'
+import { byName } from '@revenge-mod/modules/finders/filters'
 import { waitForModules } from '@revenge-mod/modules/finders/wait'
 import { after } from '@revenge-mod/patcher'
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'
-import type { SettingsItem } from '@revenge-mod/discord/modules/settings'
 import type { FC } from 'react'
 
 import './register-routes'
 
+// Always register before so setting modules that depend on the Revenge section can be registered properly
 onSettingsModulesLoaded(() => {
     require('./register')
 })
@@ -29,40 +24,6 @@ registerPlugin(
     },
     {
         start() {
-            const unsubRC = waitForModules(
-                byProps<{
-                    SETTING_RENDERER_CONFIG: Record<string, SettingsItem>
-                }>('SETTING_RENDERER_CONFIG'),
-                SettingRendererConfig => {
-                    unsubRC()
-
-                    for (const sub of sSubscriptions)
-                        try {
-                            sub()
-                        } catch {}
-
-                    // We don't ever need to call this again
-                    sSubscriptions.clear()
-                    sData.loaded = true
-
-                    let ORIGINAL_RENDERER_CONFIG =
-                        SettingRendererConfig.SETTING_RENDERER_CONFIG
-
-                    Object.defineProperty(
-                        SettingRendererConfig,
-                        'SETTING_RENDERER_CONFIG',
-                        {
-                            get: () =>
-                                ({
-                                    ...ORIGINAL_RENDERER_CONFIG,
-                                    ...sConfig,
-                                }) as Record<string, SettingsItem>,
-                            set: v => (ORIGINAL_RENDERER_CONFIG = v),
-                        },
-                    )
-                },
-            )
-
             const unsubSOS = waitForModules(
                 byName('SettingsOverviewScreen'),
                 exports => {
