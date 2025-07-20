@@ -20,7 +20,7 @@ import {
     setEnablePluginTooltipVisible,
     setEssentialPluginTooltipVisible,
 } from './TooltipProvider'
-import type { InternalPlugin } from '@revenge-mod/plugins/_'
+import type { AnyPlugin } from '@revenge-mod/plugins/_'
 import type { View } from 'react-native'
 
 const { Card, Text, Stack, IconButton, createStyles } = Design
@@ -34,7 +34,7 @@ export function InstalledPluginCard({
     enabled,
     rightGap,
 }: {
-    plugin: InternalPlugin
+    plugin: AnyPlugin
     iflags: number
     enabled: boolean
     rightGap?: boolean

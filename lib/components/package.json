@@ -18,9 +18,6 @@
     "./TableRowAssetIcon": {
       "default": "./src/TableRowAssetIcon.tsx"
     },
-    "./init": {
-      "default": "./src/init.ts"
-    },
     "./types": {
       "types": "./src/types.ts"
     },

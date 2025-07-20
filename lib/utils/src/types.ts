@@ -12,3 +12,29 @@ export type DeepPartial<T> = {
 export type ExtractPredicate<T> = T extends (arg: any) => arg is infer R
     ? R
     : never
+
+/// PLUGIN API EXTENSIONS
+
+export interface PreInitPluginApiUtils {
+    callback: typeof import('@revenge-mod/utils/callback')
+    error: typeof import('@revenge-mod/utils/error')
+    object: typeof import('@revenge-mod/utils/object')
+    promise: typeof import('@revenge-mod/utils/promise')
+    proxy: typeof import('@revenge-mod/utils/proxy')
+    tree: typeof import('@revenge-mod/utils/tree')
+}
+
+export interface PluginApiUtils extends PreInitPluginApiUtils {
+    react: typeof import('@revenge-mod/utils/react')
+    discord: typeof import('@revenge-mod/utils/discord')
+}
+
+declare module '@revenge-mod/plugins/types' {
+    export interface UnscopedPreInitPluginApi {
+        utils: PreInitPluginApiUtils
+    }
+
+    export interface UnscopedInitPluginApi {
+        utils: PluginApiUtils
+    }
+}

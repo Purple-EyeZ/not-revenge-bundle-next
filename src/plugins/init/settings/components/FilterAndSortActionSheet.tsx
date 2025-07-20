@@ -2,14 +2,14 @@ import TableRowAssetIcon from '@revenge-mod/components/TableRowAssetIcon'
 import { Design } from '@revenge-mod/discord/design'
 import { useState } from 'react'
 import type { AssetId } from '@revenge-mod/assets/types'
-import type { InternalPlugin } from '@revenge-mod/plugins/_'
+import type { AnyPlugin } from '@revenge-mod/plugins/_'
 
 export interface FilterAndSortActionSheetProps {
     filters: Record<
         string,
         {
             icon: AssetId
-            filter: (p: InternalPlugin, iflags: number) => boolean
+            filter: (p: AnyPlugin, iflags: number) => boolean
         }
     >
     filter: string[]
@@ -18,7 +18,7 @@ export interface FilterAndSortActionSheetProps {
     setMatchAll: (matchAll: boolean) => void
     sorts: Record<
         string,
-        [icon: AssetId, (a: InternalPlugin, b: InternalPlugin) => number]
+        [icon: AssetId, (a: AnyPlugin, b: AnyPlugin) => number]
     >
     sort: string
     setSort: (fn: string) => void

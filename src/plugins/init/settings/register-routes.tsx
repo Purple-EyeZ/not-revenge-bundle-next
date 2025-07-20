@@ -1,6 +1,6 @@
 import TableRowAssetIcon from '@revenge-mod/components/TableRowAssetIcon'
 import { registerSettingsItem } from '@revenge-mod/discord/modules/settings'
-import { pEmitter, pMetadata } from '@revenge-mod/plugins/_'
+import { pEmitter } from '@revenge-mod/plugins/_'
 import { lazy, useLayoutEffect } from 'react'
 import { Setting } from './constants'
 import type { StackScreenProps } from '@react-navigation/stack'
@@ -13,7 +13,7 @@ const NavigatorHeaderWithIcon = lazy(
 
 pEmitter.on('started', plugin => {
     if (plugin.SettingsComponent) {
-        const api = pMetadata.get(plugin.manifest.id)!.api as PluginApi<any>
+        const api = plugin.api as PluginApi<any>
 
         function PluginSettings({
             navigation,

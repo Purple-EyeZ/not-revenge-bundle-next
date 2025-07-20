@@ -22,7 +22,7 @@ import {
 import { useUpdateOnPluginStatesChange } from '../definitions/RevengePluginsSetting'
 import type { RouteProp } from '@react-navigation/core'
 import type { ReactNavigationParamList } from '@revenge-mod/externals/react-navigation'
-import type { InternalPlugin } from '@revenge-mod/plugins/_'
+import type { AnyPlugin } from '@revenge-mod/plugins/_'
 import type { FilterAndSortActionSheetProps } from '../components/FilterAndSortActionSheet'
 import type { RouteNames, Setting } from '../constants'
 
@@ -108,11 +108,7 @@ function Screen() {
     const allPlugins = useMemo(
         () =>
             [...pList.values()].map(
-                plugin =>
-                    [
-                        plugin,
-                        pMetadata.get(plugin.manifest.id)!.iflags,
-                    ] as const,
+                plugin => [plugin, pMetadata.get(plugin)!.iflags] as const,
             ),
         [],
     )
@@ -194,7 +190,7 @@ function Screen() {
 function PluginMasonryFlashList({
     plugins,
 }: {
-    plugins: (readonly [InternalPlugin, number])[]
+    plugins: (readonly [AnyPlugin, number])[]
 }) {
     const { width, height } = useWindowDimensions()
     const numColumns = Math.floor((width - 16) / 448)

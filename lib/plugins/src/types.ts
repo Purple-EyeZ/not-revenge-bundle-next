@@ -12,7 +12,7 @@ export interface PluginApiExtensionsOptions {}
  * Available in the `preInit` phase.
  */
 export interface UnscopedPreInitPluginApi<
-    // biome-ignore lint/correctness/noUnusedVariables: This is used for extensions
+    // biome-ignore lint/correctness/noUnusedVariables: This is for plugin API extensions
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
 > {
     modules: PluginApiModules
@@ -48,9 +48,11 @@ export type PluginCleanupApi = (...fns: PluginCleanup[]) => void
  * Available in the `preInit` phase.
  */
 export interface PreInitPluginApi<
-    // biome-ignore lint/correctness/noUnusedVariables: This is used for extensions
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
 > {
+    decorate(
+        decorator: (plugin: Plugin<O, 'PreInit'>, options: O) => void,
+    ): void
     unscoped: UnscopedPreInitPluginApi
     cleanup: PluginCleanupApi
     plugin: Plugin
@@ -60,9 +62,11 @@ export interface PreInitPluginApi<
  * The plugin API (limited).
  * Available in the `init` phase.
  */
+// @ts-expect-error
 export interface InitPluginApi<
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
 > extends PreInitPluginApi<O> {
+    decorate(decorator: (plugin: Plugin<O, 'Init'>, options: O) => void): void
     unscoped: UnscopedInitPluginApi
 }
 
@@ -70,9 +74,11 @@ export interface InitPluginApi<
  * The plugin API.
  * Available in the `start` and `stop` phase.
  */
+// @ts-expect-error
 export interface PluginApi<
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
 > extends InitPluginApi<O> {
+    decorate(decorator: (plugin: Plugin<O, 'Start'>, options: O) => void): void
     unscoped: UnscopedPluginApi
 }
 
@@ -113,6 +119,22 @@ export interface PluginManifest {
      * The icon of the plugin.
      */
     icon?: string
+    /**
+     * The dependencies of the plugin.
+     */
+    dependencies?: PluginDependency[]
+}
+
+export interface PluginDependency {
+    /**
+     * The ID of this dependency.
+     */
+    id: string
+    // TODO(plugins): support plugin bundles
+    // /**
+    //  * The bundle of this dependency.
+    //  */
+    // bundle: PluginBundle
 }
 
 export interface PluginOptions<
@@ -154,6 +176,7 @@ export interface PluginLifecycles<
 
 export interface Plugin<
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
+    S extends keyof PluginApiInStage<O> = keyof PluginApiInStage<O>,
 > {
     // TODO(plugins): support plugin bundles
     // /**
@@ -197,6 +220,20 @@ export interface Plugin<
      * Stop the plugin.
      */
     stop(): Promise<void>
+
+    /**
+     * The plugin API.
+     *
+     * Not recommended to use this directly.
+     */
+    api: PluginApiInStage<O>[S]
+}
+
+type PluginApiInStage<O extends PluginApiExtensionsOptions> = {
+    Register: undefined
+    PreInit: PreInitPluginApi<O>
+    Init: InitPluginApi<O>
+    Start: PluginApi<O>
 }
 
 export interface PluginSettingsComponent<

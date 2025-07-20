@@ -1,10 +1,5 @@
 // Initialize init libraries
-import '@revenge-mod/utils/init'
 import '@revenge-mod/react/init'
-import '@revenge-mod/storage/init'
-import '@revenge-mod/externals/init'
-import '@revenge-mod/discord/init'
-import '@revenge-mod/components/init'
 
 // Run all init plugins
 import '~/plugins/init'

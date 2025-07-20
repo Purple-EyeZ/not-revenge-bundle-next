@@ -17,6 +17,7 @@ import type {
 
 export * from './native'
 export * from './polyfills'
+export * from './revenge'
 
 export namespace DiscordModules {
     export namespace Flux {

@@ -3,6 +3,7 @@
 import { FileModule } from '@revenge-mod/discord/native'
 import { getErrorStack } from '@revenge-mod/utils/error'
 import { mergeDeep } from '@revenge-mod/utils/object'
+import { instanceToSubscriptions } from './_internal'
 import type { AnyObject, DeepPartial } from '@revenge-mod/utils/types'
 
 export type StorageSubscription<T extends AnyObject = AnyObject> = (
@@ -20,7 +21,8 @@ export function Storage<T extends AnyObject>(
     const dirPath = directory === 'cache' ? CacheDirPath : DocumentsDirPath
     const fullPath = `${dirPath}/${path}`
 
-    this._s = new Set<StorageSubscription<T>>()
+    const subscriptions = new Set<StorageSubscription<T>>()
+    instanceToSubscriptions.set(this, subscriptions)
 
     this.loaded = false
     this.cache = options?.default
@@ -41,7 +43,7 @@ export function Storage<T extends AnyObject>(
             this.loaded = true
             try {
                 const cache = (this.cache = JSON.parse(contents))
-                for (const sub of this._s) sub(cache)
+                for (const sub of subscriptions) sub(cache)
                 return cache
             } catch (e) {
                 nativeLoggingHook(
@@ -60,7 +62,7 @@ export function Storage<T extends AnyObject>(
             const contents = JSON.stringify(this.cache)
             await FileModule.writeFile(directory, path, contents, 'utf8')
 
-            for (const sub of this._s) sub(value)
+            for (const sub of subscriptions) sub(value)
         } catch (e) {
             nativeLoggingHook(
                 `Failed to write storage (<${directory}>/${path}): ${getErrorStack(e)}`,
@@ -114,10 +116,6 @@ export type UseStorageFilter<T extends AnyObject> = (
 ) => any
 
 export interface Storage<T extends AnyObject> {
-    /**
-     * @internal
-     */
-    _s: Set<StorageSubscription<T>>
     /**
      * Whether the storage has been loaded. If the storage is not loaded, `storage.cache` may be `undefined`.
      * If you have `options.default` set, you can use this property to check if `storage.cache` is the default value or not.

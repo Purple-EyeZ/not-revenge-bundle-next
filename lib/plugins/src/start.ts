@@ -1,5 +1,8 @@
-import { pList, startPlugin } from '@revenge-mod/plugins/_'
+import { startPlugin } from './_internal'
+import { computePendingNodes, pListOrdered } from './_internal/dependency-graph'
 import { PluginFlags } from './constants'
 
-for (const plugin of pList.values())
+computePendingNodes()
+
+for (const plugin of pListOrdered)
     if (plugin.flags & PluginFlags.Enabled) startPlugin(plugin)

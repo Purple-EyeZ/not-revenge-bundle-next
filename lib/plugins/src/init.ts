@@ -1,12 +1,8 @@
-import * as AssetsLibrary from '@revenge-mod/assets'
-import { initPlugin, pList } from './_internal'
-import { pUnscopedApi } from './apis'
+import { initPlugin } from './_internal'
+import { computePendingNodes, pListOrdered } from './_internal/dependency-graph'
 import { PluginFlags } from './constants'
-import type { UnscopedInitPluginApi } from './types'
 
-// Setup init plugin APIs
-const uapi = pUnscopedApi as UnscopedInitPluginApi
-uapi.assets = AssetsLibrary
+computePendingNodes()
 
-for (const plugin of pList.values())
+for (const plugin of pListOrdered)
     if (plugin.flags & PluginFlags.Enabled) initPlugin(plugin)

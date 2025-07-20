@@ -8,7 +8,7 @@ import { useReRender } from '@revenge-mod/utils/react'
 import { useEffect } from 'react'
 import { RouteNames, Setting } from '../constants'
 import type { SettingsItem } from '@revenge-mod/discord/modules/settings'
-import type { InternalPlugin } from '@revenge-mod/plugins/_'
+import type { AnyPlugin } from '@revenge-mod/plugins/_'
 
 const RevengePluginsSetting: SettingsItem = {
     parent: null,
@@ -58,8 +58,8 @@ const { AlertActionButton, AlertModal, Text } = Design
 pEmitter.on('started', showReloadRequiredAlertIfNeeded)
 pEmitter.on('stopped', showReloadRequiredAlertIfNeeded)
 
-function showReloadRequiredAlertIfNeeded(plugin: InternalPlugin) {
-    if (plugin.flags & PluginFlags.ReloadRequired) {
+function showReloadRequiredAlertIfNeeded(plugin: AnyPlugin) {
+    if (plugin.flags & PluginFlags.ReloadRequired)
         AlertActionCreators.openAlert(
             'plugin-reload-required',
             <AlertModal
@@ -87,7 +87,6 @@ function showReloadRequiredAlertIfNeeded(plugin: InternalPlugin) {
                 }
             />,
         )
-    }
 }
 
 export default RevengePluginsSetting
