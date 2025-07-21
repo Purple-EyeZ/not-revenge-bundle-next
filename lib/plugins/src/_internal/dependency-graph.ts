@@ -23,11 +23,11 @@ export const pListOrdered: AnyPlugin[] = []
 export const pPending = new Set<AnyPlugin>()
 
 export function computePendingNodes() {
-    for (const plugin of pLeafOrSingleNodes) pListOrdered.unshift(plugin)
-    pLeafOrSingleNodes.clear()
-
     for (const plugin of pPending) resolvePluginGraph(plugin)
     pPending.clear()
+
+    for (const plugin of pLeafOrSingleNodes) pListOrdered.unshift(plugin)
+    pLeafOrSingleNodes.clear()
 
     const stack = [...pRootNodes]
     pRootNodes.clear()

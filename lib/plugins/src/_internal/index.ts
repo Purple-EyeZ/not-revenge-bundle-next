@@ -1,6 +1,6 @@
 import { TypedEventEmitter } from '@revenge-mod/discord/common/utils'
 import { getErrorStack } from '@revenge-mod/utils/error'
-import { allSettled, sleepReject } from '@revenge-mod/utils/promise'
+import { sleepReject } from '@revenge-mod/utils/promise'
 import { pUnscopedApi as uapi } from '../apis'
 import {
     PluginFlags as Flag,
@@ -29,6 +29,41 @@ import type {
 
 export type AnyPlugin = Plugin<any, any>
 
+const MaxWaitTime = 5000
+
+const PluginApiLevel = {
+    None: 0,
+    PreInit: 1,
+    Init: 2,
+    Start: 3,
+} as const
+
+export const InternalPluginFlags = {
+    /**
+     * Marks the plugin as internal.
+     */
+    Internal: 1 << 0,
+    /**
+     * Marks the plugin as essential. This means it should not be removed, disabled, or stopped by normal means.
+     */
+    Essential: 1 << 1,
+    /**
+     * Marks the plugin as a dependency of all other plugins.
+     */
+    ImplicitDependency: 1 << 2,
+}
+
+export interface InternalPluginMeta {
+    handleError: (e: unknown) => Promise<void>
+    promises: Promise<void>[]
+    cleanups: PluginCleanup[]
+    iflags: number
+    apiLevel: number
+    dependents: AnyPlugin[]
+    dependencies?: AnyPlugin[]
+    options: PluginOptions<any>
+}
+
 export const pUnscopedApi = uapi
 export const pEmitter = new TypedEventEmitter<{
     register: [AnyPlugin, PluginOptions<any>, update?: true]
@@ -44,17 +79,9 @@ export const pEmitter = new TypedEventEmitter<{
 export const pList = new Map<PluginManifest['id'], AnyPlugin>()
 export const pMetadata = new WeakMap<AnyPlugin, InternalPluginMeta>()
 
-export interface InternalPluginMeta {
-    handleError: (e: unknown) => Promise<void>
-    promises: Promise<void>[]
-    cleanups: PluginCleanup[]
-    iflags: number
-    apiLevel: number
-    dependents: AnyPlugin[]
-    dependencies?: AnyPlugin[]
-    options: PluginOptions<any>
-}
-
+/**
+ * Registers a new plugin with the system.
+ */
 export function registerPlugin<O extends PluginApiExtensionsOptions>(
     manifest: PluginManifest,
     options: PluginOptions<O>,
@@ -105,12 +132,14 @@ export function registerPlugin<O extends PluginApiExtensionsOptions>(
     pEmitter.emit('register', plugin, options)
 }
 
+/**
+ * Gets dependencies for a plugin.
+ */
 export function getPluginDependencies(plugin: AnyPlugin): AnyPlugin[] {
     const meta = pMetadata.get(plugin)!
     if (meta.dependencies) return meta.dependencies
 
     const { dependencies, id } = plugin.manifest
-
     const deps: AnyPlugin[] = []
 
     if (dependencies?.length)
@@ -137,6 +166,9 @@ export function getPluginDependencies(plugin: AnyPlugin): AnyPlugin[] {
     return (meta.dependencies = deps)
 }
 
+/**
+ * Handles errors that occur in plugins.
+ */
 async function handlePluginError(e: unknown, plugin: AnyPlugin) {
     plugin.errors.push(e)
     plugin.flags |= Flag.Errored
@@ -147,13 +179,15 @@ async function handlePluginError(e: unknown, plugin: AnyPlugin) {
         2,
     )
 
-    plugin.api.logger?.error('Plugin encountered an error', e)
-
+    plugin.api?.logger?.error('Plugin encountered an error', e)
     pEmitter.emit('errored', plugin, e)
 
     if (!(iflags & InternalPluginFlags.Essential)) await plugin.disable()
 }
 
+/**
+ * Prepares the plugin API for the preInit lifecycle.
+ */
 function preparePluginPreInit(plugin: AnyPlugin) {
     const meta = pMetadata.get(plugin)!
 
@@ -173,35 +207,43 @@ function preparePluginPreInit(plugin: AnyPlugin) {
     } satisfies PreInitPluginApi
 
     decoratePluginApi(pDecoratorsPreInit, plugin, meta)
-
     meta.apiLevel = PluginApiLevel.PreInit
 }
 
+/**
+ * Prepares the plugin API for the init lifecycle.
+ */
 function preparePluginInit(plugin: AnyPlugin) {
     const meta = pMetadata.get(plugin)!
     const api = plugin.api as InitPluginApi
+
     api.decorate = decorator => {
         addPluginApiDecorator(pDecoratorsInit, plugin, decorator)
     }
 
     decoratePluginApi(pDecoratorsInit, plugin, meta)
-
     meta.apiLevel = PluginApiLevel.Init
 }
 
+/**
+ * Prepares the plugin API for the start lifecycle.
+ */
 function preparePluginStart(plugin: AnyPlugin) {
     const meta = pMetadata.get(plugin)!
     const api = plugin.api as PluginApi
+
     api.decorate = decorator => {
         addPluginApiDecorator(pDecoratorsStart, plugin, decorator)
     }
 
     decoratePluginApi(pDecoratorsStart, plugin, meta)
-
     meta.apiLevel = PluginApiLevel.Start
 }
 
-async function disablePlugin(plugin: AnyPlugin) {
+/**
+ * Disables a plugin.
+ */
+export async function disablePlugin(plugin: AnyPlugin) {
     if (!(plugin.flags & Flag.Enabled))
         throw new Error(`Plugin "${plugin.manifest.id}" is not enabled`)
 
@@ -211,16 +253,18 @@ async function disablePlugin(plugin: AnyPlugin) {
             `Plugin "${plugin.manifest.id}" is essential and cannot be disabled`,
         )
 
-    // If plugin is not stopped, and is also not stopping, we need to stop it
+    // Stop the plugin if needed
     if (plugin.status && !(plugin.status & Status.Stopping))
         await stopPlugin(plugin)
 
     // TODO(plugins): write to storage
     plugin.flags &= ~Flag.Enabled
-
     pEmitter.emit('disabled', plugin)
 }
 
+/**
+ * Enables a plugin.
+ */
 export function enablePlugin(plugin: AnyPlugin, late: boolean) {
     if (plugin.flags & Flag.Enabled)
         throw new Error(`Plugin "${plugin.manifest.id}" is already enabled`)
@@ -232,11 +276,15 @@ export function enablePlugin(plugin: AnyPlugin, late: boolean) {
     pEmitter.emit('enabled', plugin)
 }
 
+/**
+ * Runs the preInit lifecycle of a plugin.
+ */
 export async function preInitPlugin(plugin: AnyPlugin) {
     const {
         manifest: { id },
         lifecycles,
     } = plugin
+
     try {
         if (!lifecycles.preInit) return
 
@@ -245,13 +293,13 @@ export async function preInitPlugin(plugin: AnyPlugin) {
 
         if (!(plugin.flags & Flag.Enabled))
             throw new Error(`Plugin "${id}" is not enabled`)
+
         if (plugin.status & (Status.PreIniting | Status.PreInited))
             throw new Error(
                 `Plugin preInit lifecycle for "${id}" is already running`,
             )
 
         preparePluginPreInit(plugin)
-
         plugin.status |= Status.PreIniting
 
         try {
@@ -270,6 +318,9 @@ export async function preInitPlugin(plugin: AnyPlugin) {
     }
 }
 
+/**
+ * Runs the init lifecycle of a plugin.
+ */
 export async function initPlugin(plugin: AnyPlugin) {
     const {
         manifest: { id },
@@ -284,6 +335,7 @@ export async function initPlugin(plugin: AnyPlugin) {
 
         if (!(plugin.flags & Flag.Enabled))
             throw new Error(`Plugin "${id}" is not enabled`)
+
         if (plugin.status & (Status.Initing | Status.Inited))
             throw new Error(
                 `Plugin init lifecycle for "${id}" is already running`,
@@ -310,6 +362,9 @@ export async function initPlugin(plugin: AnyPlugin) {
     }
 }
 
+/**
+ * Starts a plugin by running its start lifecycle.
+ */
 export async function startPlugin(plugin: AnyPlugin) {
     const {
         manifest: { id },
@@ -324,6 +379,7 @@ export async function startPlugin(plugin: AnyPlugin) {
 
         if (!(plugin.flags & Flag.Enabled))
             throw new Error(`Plugin "${id}" is not enabled`)
+
         if (plugin.status & (Status.Starting | Status.Started))
             throw new Error(
                 `Plugin start lifecycle for "${id}" is already running`,
@@ -340,7 +396,6 @@ export async function startPlugin(plugin: AnyPlugin) {
             promises.push(prom)
             await prom
 
-            // disablePlugin() already handles cleaning up statuses, so it's in the try block
             plugin.status |= Status.Started
             plugin.status &= ~Status.Starting
         } catch (e) {
@@ -351,8 +406,9 @@ export async function startPlugin(plugin: AnyPlugin) {
     }
 }
 
-const MaxWaitTime = 5000
-
+/**
+ * Stops a plugin by running its stop lifecycle and cleanup functions.
+ */
 export async function stopPlugin(plugin: AnyPlugin) {
     const {
         manifest: { id },
@@ -366,11 +422,11 @@ export async function stopPlugin(plugin: AnyPlugin) {
 
     if (!(plugin.flags & Flag.Enabled))
         throw new Error(`Plugin "${id}" is not enabled`)
-    if (plugin.status & Status.Stopping)
-        throw new Error(`Plugin "${id}" is stopping`)
 
-    // If the plugin is running its lifecycles, we need to wait for it to finish, then we'll stop it
-    // We want to wait at max 5 seconds for the lifecycles to finish
+    if (plugin.status & Status.Stopping)
+        throw new Error(`Plugin "${id}" is already stopping`)
+
+    // Wait for in-progress lifecycles to finish or timeout
     if (plugin.status & (Status.PreIniting | Status.Initing | Status.Starting))
         await Promise.race([
             Promise.all(promises),
@@ -378,19 +434,16 @@ export async function stopPlugin(plugin: AnyPlugin) {
                 MaxWaitTime,
                 'Plugin lifecycles timed out, force stopping',
             ),
-        ])
-            .then(finished => {
-                // If the lifecycles don't finish in 5 seconds, a reload is probably required to unapply the changes
-                if (!finished) plugin.flags |= Flag.ReloadRequired
-            })
-            .catch(e => {
-                handlePluginError(e, plugin)
-            })
+        ]).catch(e => {
+            plugin.flags |= Flag.ReloadRequired
+            handlePluginError(e, plugin)
+        })
     else if (
         !(plugin.status & (Status.PreInited | Status.Inited | Status.Started))
     )
         throw new Error(`Plugin "${id}" is not running`)
 
+    // Prepare APIs if needed
     if (apiLevel < PluginApiLevel.PreInit) preparePluginPreInit(plugin)
     if (apiLevel < PluginApiLevel.Init) preparePluginInit(plugin)
     if (apiLevel < PluginApiLevel.Start) preparePluginStart(plugin)
@@ -398,76 +451,49 @@ export async function stopPlugin(plugin: AnyPlugin) {
     plugin.status |= Status.Stopping
 
     try {
-        if (!lifecycles.stop) return
-
-        await Promise.race([
-            lifecycles.stop(plugin.api as PluginApi),
-            sleepReject(
-                MaxWaitTime,
-                'Plugin stop lifecycle timed out, force stopping',
-            ),
-        ])
+        if (lifecycles.stop)
+            await Promise.race([
+                lifecycles.stop(plugin.api as PluginApi),
+                sleepReject(
+                    MaxWaitTime,
+                    'Plugin stop lifecycle timed out, force stopping',
+                ),
+            ])
     } catch (e) {
         await handlePluginError(e, plugin)
     } finally {
         // Run cleanups
+        await cleanupPlugin(plugin, meta)
 
-        function handleStopError(e: unknown) {
-            // Some cleanup was unsuccessful, so we need to reload the app
-            plugin.flags |= Flag.ReloadRequired
-            return handlePluginError(e, plugin)
-        }
-
-        try {
-            const results = await allSettled(
-                meta.cleanups.map(cleanup => cleanup()),
-            )
-
-            await Promise.all(
-                results.map(
-                    result =>
-                        result.status === 'rejected' &&
-                        handleStopError(result.reason),
-                ),
-            )
-        } catch (e) {
-            await handleStopError(e)
-        }
-
-        // Reset APIs
+        // Reset state
         plugin.api = undefined
         meta.apiLevel = PluginApiLevel.None
-
-        // Clear temp data
         meta.promises = []
         meta.cleanups = []
-
-        // Reset status
         plugin.status = 0
 
         pEmitter.emit('stopped', plugin)
     }
 }
 
-export const InternalPluginFlags = {
-    /**
-     * Marks the plugin as internal.
-     */
-    Internal: 1 << 0,
-    /**
-     * Marks the plugin as essential. This means it should not be removed, disabled, or stopped by normal means.
-     */
-    Essential: 1 << 1,
-    /**
-     * Marks the plugin as a leaf node in the plugin graph, implicitly making it a dependency for every plugin (as they are executed first).
-     * This means it has no dependencies, but may have dependents, and it will be started first.
-     */
-    ImplicitDependency: 1 << 2,
-}
+/**
+ * Runs all cleanup functions registered by a plugin.
+ */
+async function cleanupPlugin(plugin: AnyPlugin, meta: InternalPluginMeta) {
+    async function handleStopError(e: unknown) {
+        // Some cleanup was unsuccessful, so we need to reload the app
+        plugin.flags |= Flag.ReloadRequired
+        return handlePluginError(e, plugin)
+    }
 
-const PluginApiLevel = {
-    None: 0,
-    PreInit: 1,
-    Init: 2,
-    Start: 3,
-} as const
+    const proms: Promise<any>[] = []
+
+    for (const cleanup of meta.cleanups)
+        try {
+            proms.push(cleanup())
+        } catch (e) {
+            await handleStopError(e)
+        }
+
+    await Promise.all(proms)
+}
