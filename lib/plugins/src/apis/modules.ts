@@ -5,6 +5,7 @@ import * as PluginApiModulesFindersWait from '@revenge-mod/modules/finders/wait'
 import * as PluginApiModulesMetroSubscriptions from '@revenge-mod/modules/metro/subscriptions'
 import * as PluginApiModulesMetroUtils from '@revenge-mod/modules/metro/utils'
 import * as PluginApiModulesNative_ from '@revenge-mod/modules/native'
+import { spreadDescriptors } from '.'
 
 export interface PluginApiModules {
     finders: PluginApiModulesFinders
@@ -28,15 +29,18 @@ export type PluginApiModulesFinders =
     }
 
 export const modules: PluginApiModules = {
-    finders: {
-        ...PluginApiModulesFindersGet,
-        ...PluginApiModulesFindersLookup,
-        ...PluginApiModulesFindersWait,
-        filters: PluginApiModulesFindersFilters,
-    },
-    metro: {
-        ...PluginApiModulesMetroUtils,
-        ...PluginApiModulesMetroSubscriptions,
-    },
+    finders: spreadDescriptors(
+        PluginApiModulesFindersGet,
+        spreadDescriptors(
+            PluginApiModulesFindersLookup,
+            spreadDescriptors(PluginApiModulesFindersWait, {
+                filters: PluginApiModulesFindersFilters,
+            }),
+        ),
+    ),
+    metro: spreadDescriptors(
+        PluginApiModulesMetroUtils,
+        spreadDescriptors(PluginApiModulesMetroSubscriptions, {}),
+    ),
     native: PluginApiModulesNative_,
 }

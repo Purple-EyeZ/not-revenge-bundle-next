@@ -7,7 +7,14 @@ import {
     PluginFlags,
     PluginStatus as Status,
 } from '../constants'
-import { decoratePluginApi, pDecorators } from './decorators'
+import {
+    addPluginApiDecorator,
+    decoratePluginApi,
+    pDecoratorsInit,
+    pDecoratorsPreInit,
+    pDecoratorsStart,
+    pImplicitDeps,
+} from './decorators'
 import { pLeafOrSingleNodes, pPending } from './dependency-graph'
 import type {
     InitPluginApi,
@@ -44,6 +51,7 @@ export interface InternalPluginMeta {
     iflags: number
     apiLevel: number
     dependents: AnyPlugin[]
+    dependencies?: AnyPlugin[]
     options: PluginOptions<any>
 }
 
@@ -87,12 +95,46 @@ export function registerPlugin<O extends PluginApiExtensionsOptions>(
     pMetadata.set(plugin, meta)
     pList.set(manifest.id, plugin)
 
-    if (iflags & InternalPluginFlags.ImplicitDependency)
+    if (iflags & InternalPluginFlags.ImplicitDependency) {
         pLeafOrSingleNodes.add(plugin)
+        pImplicitDeps.add(plugin)
+    }
     // Only add to pending if the plugin is enabled
     else if (flags & PluginFlags.Enabled) pPending.add(plugin)
 
     pEmitter.emit('register', plugin, options)
+}
+
+export function getPluginDependencies(plugin: AnyPlugin): AnyPlugin[] {
+    const meta = pMetadata.get(plugin)!
+    if (meta.dependencies) return meta.dependencies
+
+    const { dependencies, id } = plugin.manifest
+
+    const deps: AnyPlugin[] = []
+
+    if (dependencies?.length)
+        for (const { id: depId } of dependencies) {
+            const dep = pList.get(depId)
+
+            if (dep) {
+                if (dep.flags & PluginFlags.Enabled) deps.push(dep)
+                else
+                    throw new Error(
+                        `Plugin "${id}" depends on disabled plugin "${depId}"`,
+                    )
+            } else {
+                // TODO: Once external plugins are implemented, we will have to check the external plugin registry here as well
+                // External plugin registry should ideally be Record<PluginManifest['id'], [PluginManifest, Flags: number, PluginCode: string]>
+                // Then we register the plugin here and do dep = pList.get(id) again
+
+                throw new Error(
+                    `Plugin "${id}" depends on unregistered plugin "${depId}"`,
+                )
+            }
+        }
+
+    return (meta.dependencies = deps)
 }
 
 async function handlePluginError(e: unknown, plugin: AnyPlugin) {
@@ -126,11 +168,11 @@ function preparePluginPreInit(plugin: AnyPlugin) {
         plugin,
         unscoped: pUnscopedApi,
         decorate: decorator => {
-            pDecorators.preInit.push([decorator, meta.handleError])
+            addPluginApiDecorator(pDecoratorsPreInit, plugin, decorator)
         },
     } satisfies PreInitPluginApi
 
-    decoratePluginApi(pDecorators.preInit, plugin, meta)
+    decoratePluginApi(pDecoratorsPreInit, plugin, meta)
 
     meta.apiLevel = PluginApiLevel.PreInit
 }
@@ -139,10 +181,10 @@ function preparePluginInit(plugin: AnyPlugin) {
     const meta = pMetadata.get(plugin)!
     const api = plugin.api as InitPluginApi
     api.decorate = decorator => {
-        pDecorators.init.push([decorator, meta.handleError])
+        addPluginApiDecorator(pDecoratorsInit, plugin, decorator)
     }
 
-    decoratePluginApi(pDecorators.init, plugin, meta)
+    decoratePluginApi(pDecoratorsInit, plugin, meta)
 
     meta.apiLevel = PluginApiLevel.Init
 }
@@ -151,10 +193,10 @@ function preparePluginStart(plugin: AnyPlugin) {
     const meta = pMetadata.get(plugin)!
     const api = plugin.api as PluginApi
     api.decorate = decorator => {
-        pDecorators.start.push([decorator, meta.handleError])
+        addPluginApiDecorator(pDecoratorsStart, plugin, decorator)
     }
 
-    decoratePluginApi(pDecorators.start, plugin, meta)
+    decoratePluginApi(pDecoratorsStart, plugin, meta)
 
     meta.apiLevel = PluginApiLevel.Start
 }

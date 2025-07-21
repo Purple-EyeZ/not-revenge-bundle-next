@@ -3,6 +3,7 @@ import {
     PluginFlags,
     PluginsStorageDirectory,
 } from '@revenge-mod/plugins/constants'
+import * as storage from '@revenge-mod/storage'
 import { getStorage } from '@revenge-mod/storage'
 import { defineLazyProperty } from '@revenge-mod/utils/object'
 import type { AnyPlugin } from '@revenge-mod/plugins/_'
@@ -19,7 +20,9 @@ registerPlugin(
         icon: 'PollsIcon',
     },
     {
-        preInit({ decorate }) {
+        preInit({ decorate, unscoped }) {
+            unscoped.storage = storage
+
             decorate((plugin, { storage }) => {
                 if (storage) storageOptions.set(plugin, storage)
             })

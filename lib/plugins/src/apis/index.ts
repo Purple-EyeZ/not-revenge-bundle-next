@@ -1,5 +1,4 @@
 import * as patcher from '@revenge-mod/patcher'
-import * as storage from '@revenge-mod/storage'
 import { modules } from './modules'
 import { plugins } from './plugins'
 import { react } from './react'
@@ -18,5 +17,14 @@ export const pUnscopedApi:
     patcher,
     plugins,
     react,
-    storage,
+}
+
+export function spreadDescriptors<T extends object, U extends object>(
+    from: T,
+    to: U,
+): T & U {
+    return Object.defineProperties(
+        to,
+        Object.getOwnPropertyDescriptors(from),
+    ) as T & U
 }

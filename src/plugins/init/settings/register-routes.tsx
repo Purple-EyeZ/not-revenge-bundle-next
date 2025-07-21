@@ -1,14 +1,21 @@
 import TableRowAssetIcon from '@revenge-mod/components/TableRowAssetIcon'
 import { registerSettingsItem } from '@revenge-mod/discord/modules/settings'
 import { pEmitter } from '@revenge-mod/plugins/_'
-import { lazy, useLayoutEffect } from 'react'
+import { proxify } from '@revenge-mod/utils/proxy'
+import { useLayoutEffect } from 'react'
 import { Setting } from './constants'
 import type { StackScreenProps } from '@react-navigation/stack'
 import type { ReactNavigationParamList } from '@revenge-mod/externals/react-navigation'
 import type { PluginApi } from '@revenge-mod/plugins/types'
 
-const NavigatorHeaderWithIcon = lazy(
-    () => import('./components/NavigatorHeaderWithIcon'),
+type NavigatorHeaderWithIcon =
+    typeof import('./components/NavigatorHeaderWithIcon')['default']
+
+let NavigatorHeaderWithIcon = proxify(
+    (): NavigatorHeaderWithIcon =>
+        (NavigatorHeaderWithIcon =
+            require('./components/NavigatorHeaderWithIcon').default),
+    {},
 )
 
 pEmitter.on('started', plugin => {

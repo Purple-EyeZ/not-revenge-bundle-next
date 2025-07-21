@@ -19,7 +19,6 @@ export interface UnscopedPreInitPluginApi<
     patcher: typeof import('@revenge-mod/patcher')
     plugins: PluginApiPlugins
     react: PluginApiReact
-    storage: typeof import('@revenge-mod/storage')
 }
 
 /**
@@ -40,8 +39,61 @@ export interface UnscopedPluginApi<
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
 > extends UnscopedInitPluginApi<O> {}
 
+/**
+ * A cleanup function that can be registered to be called when the plugin is stopped.
+ */
 export type PluginCleanup = () => any
+/**
+ * Registers cleanup functions to be called when the plugin is stopped.
+ *
+ * @example
+ * ```ts
+ * cleanup(unpatch)
+ * cleanup(unsub)
+ * ```
+ */
 export type PluginCleanupApi = (...fns: PluginCleanup[]) => void
+
+/**
+ * Decorates the plugin API for the dependents of the plugin with a decorator function.
+ * @param decorator The decorator function to apply.
+ *
+ * @example
+ * ```ts
+ * // Your plugin's `init` function:
+ * init({ decorate }) {
+ *   decorate((plugin, options) => {
+ *     plugin.api.customMethod = () => {
+ *       console.log('Custom method called!')
+ *     }
+ *   })
+ * }
+ *
+ * // In another plugin, with your plugin as a dependency:
+ * init({ customMethod }) {
+ *   customMethod() // Logs: "Custom method called!"
+ * }
+ * ```
+ */
+export type PluginDecorateApi<
+    O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
+    S extends
+        keyof PluginApiInLifecycleMap<O> = keyof PluginApiInLifecycleMap<O>,
+> = (decorator: PluginApiDecorator<O, S>) => void
+
+/**
+ * The decorator function that modifies the plugin API.
+ *
+ * @param plugin The plugin being decorated.
+ * @param options The options the plugin passed.
+ *
+ * @see {@link PluginDecorateApi}
+ */
+export type PluginApiDecorator<
+    O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
+    S extends
+        keyof PluginApiInLifecycleMap<O> = keyof PluginApiInLifecycleMap<O>,
+> = (plugin: Plugin<O, S>, options: O) => void
 
 /**
  * The plugin API (very limited).
@@ -50,9 +102,7 @@ export type PluginCleanupApi = (...fns: PluginCleanup[]) => void
 export interface PreInitPluginApi<
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
 > {
-    decorate(
-        decorator: (plugin: Plugin<O, 'PreInit'>, options: O) => void,
-    ): void
+    decorate: PluginDecorateApi<O, 'PreInit'>
     unscoped: UnscopedPreInitPluginApi
     cleanup: PluginCleanupApi
     plugin: Plugin
@@ -66,7 +116,7 @@ export interface PreInitPluginApi<
 export interface InitPluginApi<
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
 > extends PreInitPluginApi<O> {
-    decorate(decorator: (plugin: Plugin<O, 'Init'>, options: O) => void): void
+    decorate: PluginDecorateApi<O, 'Init'>
     unscoped: UnscopedInitPluginApi
 }
 
@@ -78,7 +128,7 @@ export interface InitPluginApi<
 export interface PluginApi<
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
 > extends InitPluginApi<O> {
-    decorate(decorator: (plugin: Plugin<O, 'Start'>, options: O) => void): void
+    decorate: PluginDecorateApi<O, 'Start'>
     unscoped: UnscopedPluginApi
 }
 
@@ -98,6 +148,9 @@ export interface PluginApi<
 //     url: string
 // }
 
+/**
+ * The plugin manifest.
+ */
 export interface PluginManifest {
     /**
      * The unique identifier for the plugin.
@@ -143,6 +196,9 @@ export interface PluginOptions<
     SettingsComponent?: PluginSettingsComponent<O>
 }
 
+/**
+ * The plugin lifecycles.
+ */
 export interface PluginLifecycles<
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
 > {
@@ -176,29 +232,22 @@ export interface PluginLifecycles<
 
 export interface Plugin<
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
-    S extends keyof PluginApiInStage<O> = keyof PluginApiInStage<O>,
+    S extends
+        keyof PluginApiInLifecycleMap<O> = keyof PluginApiInLifecycleMap<O>,
 > {
     // TODO(plugins): support plugin bundles
     // /**
     //  * The plugin bundle this plugin belongs to.
     //  */
     // bundle: PluginBundle
-    /**
-     * The plugin manifest.
-     */
     manifest: PluginManifest
-    /**
-     * The plugin lifecycles.
-     */
     lifecycles: PluginLifecycles<O>
 
     /**
-     * The plugin flags.
      * @see {@link PluginFlags}
      */
     flags: number
     /**
-     * The plugin status.
      * @see {@link PluginStatus}
      */
     status: number
@@ -207,13 +256,11 @@ export interface Plugin<
      */
     errors: unknown[]
 
-    /**
-     * The plugin settings page.
-     */
     SettingsComponent?: PluginSettingsComponent<O>
 
     /**
-     * Disable the plugin. This will also stop the plugin if it is running.
+     * Disable the plugin.
+     * This will also stop the plugin if it is running.
      */
     disable(): Promise<void>
     /**
@@ -226,16 +273,24 @@ export interface Plugin<
      *
      * Not recommended to use this directly.
      */
-    api: PluginApiInStage<O>[S]
+    api: PluginApiInLifecycleMap<O>[S]
 }
 
-type PluginApiInStage<O extends PluginApiExtensionsOptions> = {
+/**
+ * The plugin API in a specific stage.
+ */
+export type PluginApiInLifecycleMap<
+    O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
+> = {
     Register: undefined
     PreInit: PreInitPluginApi<O>
     Init: InitPluginApi<O>
     Start: PluginApi<O>
 }
 
+/**
+ * The component that renders the plugin settings page.
+ */
 export interface PluginSettingsComponent<
     O extends PluginApiExtensionsOptions = PluginApiExtensionsOptions,
 > extends FunctionComponent<{ api: PluginApi<O> }> {}

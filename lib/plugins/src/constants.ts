@@ -1,3 +1,6 @@
+/**
+ * The plugin flags.
+ */
 export const PluginFlags = {
     /**
      * The plugin is enabled.
@@ -18,6 +21,9 @@ export const PluginFlags = {
     EnabledLate: 1 << 3,
 }
 
+/**
+ * The plugin status.
+ */
 export const PluginStatus = {
     PreIniting: 1 << 0,
     PreInited: 1 << 1,

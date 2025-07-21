@@ -1,5 +1,4 @@
-import { pList, pMetadata } from '../_internal'
-import { PluginFlags } from '../constants'
+import { getPluginDependencies, pMetadata } from '../_internal'
 import type { AnyPlugin } from '../_internal'
 
 /// PLUGIN DEPENDENCY GRAPHING
@@ -15,6 +14,7 @@ import type { AnyPlugin } from '../_internal'
 export const pRootNodes = new Set<AnyPlugin>()
 export const pLeafOrSingleNodes = new Set<AnyPlugin>()
 
+// Visited non-leaf nodes
 const visited = new WeakSet<AnyPlugin>()
 
 // Ordered list of plugins to be started
@@ -23,14 +23,11 @@ export const pListOrdered: AnyPlugin[] = []
 export const pPending = new Set<AnyPlugin>()
 
 export function computePendingNodes() {
+    for (const plugin of pLeafOrSingleNodes) pListOrdered.unshift(plugin)
+    pLeafOrSingleNodes.clear()
+
     for (const plugin of pPending) resolvePluginGraph(plugin)
     pPending.clear()
-
-    for (const plugin of pLeafOrSingleNodes) {
-        pListOrdered.unshift(plugin)
-        visited.add(plugin)
-    }
-    pLeafOrSingleNodes.clear()
 
     const stack = [...pRootNodes]
     pRootNodes.clear()
@@ -39,12 +36,9 @@ export function computePendingNodes() {
         const plugin = stack.pop()!
         if (visited.has(plugin)) continue
 
-        if (plugin.manifest.dependencies?.length) {
-            for (const dep of plugin.manifest.dependencies) {
-                const depPlugin = pList.get(dep.id)
-                if (depPlugin) stack.push(depPlugin)
-            }
-        } else {
+        if (plugin.manifest.dependencies?.length)
+            for (const dep of getPluginDependencies(plugin)) stack.push(dep)
+        else {
             pListOrdered.push(plugin)
             visited.add(plugin)
         }
@@ -58,23 +52,7 @@ export function resolvePluginGraph(plugin: AnyPlugin) {
         // Optimisitically add to root nodes (if there are dependents, it will be removed later)
         pRootNodes.add(plugin)
 
-        for (const { id } of manifest.dependencies) {
-            const dep = pList.get(id)
-            if (!dep) {
-                // TODO: Once external plugins are implemented, we will have to check the external plugin registry here as well
-                // External plugin registry should ideally be Record<PluginManifest['id'], [PluginManifest, Flags: number, PluginCode: string]>
-                // Then we register the plugin here and do dep = pList.get(id) again
-
-                throw new Error(
-                    `Plugin "${manifest.id}" depends on unregistered plugin "${id}"`,
-                )
-            }
-
-            if (!(dep.flags & PluginFlags.Enabled))
-                throw new Error(
-                    `Plugin "${manifest.id}" depends on disabled plugin "${id}"`,
-                )
-
+        for (const dep of getPluginDependencies(plugin)) {
             const depMeta = pMetadata.get(dep)!
             depMeta.dependents.push(plugin)
 
