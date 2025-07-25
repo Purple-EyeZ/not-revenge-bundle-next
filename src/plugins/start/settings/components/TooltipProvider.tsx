@@ -5,6 +5,7 @@
 
 import { Design } from '@revenge-mod/discord/design'
 import { useEffect, useState } from 'react'
+import { useClickOutside } from 'react-native-click-outside'
 import type { RefObject } from 'react'
 import type { View } from 'react-native'
 
@@ -71,4 +72,16 @@ export function EssentialPluginTooltipProvider({
 export function resetTooltips() {
     setEnablePluginTooltipVisible?.(false)
     setEssentialPluginTooltipVisible?.(false)
+}
+
+export function useClickOutsideTooltip(
+    target: RefObject<View | null>,
+    onClickOutside: () => void,
+) {
+    const ref = useClickOutside<View>(() => {
+        resetTooltips()
+        if (target.current === ref.current) onClickOutside()
+    })
+
+    return ref
 }

@@ -85,7 +85,7 @@ export type ByProps = FilterGenerator<
 >
 
 /**
- * Filter modules by their exports having all of the specified properties with truthy values.
+ * Filter modules by their exports having all of the specified properties.
  *
  * @param prop The property to check for.
  * @param props More properties to check for (optional).
@@ -98,7 +98,8 @@ export type ByProps = FilterGenerator<
  */
 export const byProps = createFilterGenerator<Parameters<ByProps>>(
     (props, _, exports) => {
-        if (exports instanceof Object) {
+        const type = typeof exports
+        if (type === 'object' || type === 'function') {
             for (const prop of props) {
                 if (prop in exports) continue
                 return false
@@ -127,7 +128,8 @@ export type WithoutProps = FilterGenerator<
  */
 export const withoutProps = createFilterGenerator<Parameters<WithoutProps>>(
     (props, _, exports) => {
-        if (exports instanceof Object)
+        const type = typeof exports
+        if (type === 'object' || type === 'function')
             for (const prop of props) if (prop in exports) return false
 
         return true
@@ -152,7 +154,7 @@ export type BySingleProp = FilterGenerator<
  */
 export const bySingleProp = createFilterGenerator<Parameters<BySingleProp>>(
     ([prop], _, exports) => {
-        if (exports instanceof Object && prop in exports) {
+        if (typeof exports === 'object' && prop in exports) {
             let hasMultipleProperties = false
             for (const _ in exports) {
                 if (hasMultipleProperties) return false

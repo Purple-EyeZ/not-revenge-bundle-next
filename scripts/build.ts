@@ -90,6 +90,18 @@ export default async function build(dev = Dev, log = true) {
                         find: 'react-native',
                         replacement: `${ShimsDir}/react-native.ts`,
                     },
+                    {
+                        find: '@react-navigation/native',
+                        replacement: `${ShimsDir}/@react-navigation~native.ts`,
+                    },
+                    {
+                        find: '@react-navigation/stack',
+                        replacement: `${ShimsDir}/@react-navigation~stack.ts`,
+                    },
+                    {
+                        find: '@shopify/flash-list',
+                        replacement: `${ShimsDir}/@shopify~flash-list.ts`,
+                    },
                 ],
             }),
             importGlobPlugin(),

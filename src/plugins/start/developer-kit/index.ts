@@ -4,6 +4,7 @@ import {
 } from '@revenge-mod/discord/modules/settings'
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'
+import pluginSettings from '../settings'
 import type { PluginApi } from '@revenge-mod/plugins/types'
 
 interface Storage {
@@ -28,6 +29,7 @@ registerPlugin<{ storage: Storage }>(
         description: 'Tools assisting Revenge developers.',
         author: 'Revenge',
         icon: 'WrenchIcon',
+        dependencies: [pluginSettings],
     },
     {
         storage: {
@@ -50,8 +52,8 @@ registerPlugin<{ storage: Storage }>(
                 },
             )
         },
-        stop() {
-            refreshSettingsOverviewScreen()
+        stop({ cleanup }) {
+            cleanup(refreshSettingsOverviewScreen)
         },
     },
     PluginFlags.Enabled,

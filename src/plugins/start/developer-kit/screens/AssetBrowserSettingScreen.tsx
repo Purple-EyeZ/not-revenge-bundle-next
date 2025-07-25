@@ -8,9 +8,9 @@ import {
 } from '@revenge-mod/discord/actions'
 import { Design } from '@revenge-mod/discord/design'
 import { Clipboard } from '@revenge-mod/externals/react-native-clipboard'
-import { FlashList } from '@revenge-mod/externals/shopify'
 import { debounce } from '@revenge-mod/utils/callback'
 import { lookupGeneratedIconComponent } from '@revenge-mod/utils/discord'
+import { FlashList } from '@shopify/flash-list'
 import { useCallback, useMemo, useState } from 'react'
 import { Image, StyleSheet, useWindowDimensions } from 'react-native'
 import type { Asset, AssetId } from '@revenge-mod/assets/types'
@@ -51,7 +51,7 @@ export default function AssetBrowserSettingScreen() {
                 }}
                 size="md"
             />
-            <FlashList.FlashList
+            <FlashList
                 data={filteredAssets}
                 contentContainerStyle={styles.listContainer}
                 fadingEdgeLength={32}

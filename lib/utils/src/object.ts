@@ -8,7 +8,7 @@ export { objectFreeze } from './patches/object'
  * @param val The value to check.
  */
 export function isObject(val: any): val is AnyObject {
-    return val?.__proto__ === Object.prototype
+    return typeof val === 'object' && val !== null && !Array.isArray(val)
 }
 
 /**

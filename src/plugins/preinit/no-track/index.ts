@@ -1,4 +1,3 @@
-import { DispatcherModuleId } from '@revenge-mod/discord/common/flux'
 import { byProps } from '@revenge-mod/modules/finders/filters'
 import { waitForModules } from '@revenge-mod/modules/finders/wait'
 import { getModuleDependencies } from '@revenge-mod/modules/metro/utils'
@@ -87,7 +86,17 @@ registerPlugin(
 
             cleanup(unsubSU, unsubSIU, unsubSentryInst)
         },
-        start({ cleanup, logger }) {
+        start({
+            cleanup,
+            logger,
+            unscoped: {
+                discord: {
+                    common: {
+                        flux: { DispatcherModuleId },
+                    },
+                },
+            },
+        }) {
             // utils/AnalyticsUtils.tsx
             const unsubAU = waitForModules(
                 byProps<{

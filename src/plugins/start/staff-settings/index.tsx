@@ -1,10 +1,11 @@
+import { ToastActionCreators } from '@revenge-mod/discord/actions'
 import { getStore, Stores } from '@revenge-mod/discord/common/flux'
-import { refreshSettingsOverviewScreen } from '@revenge-mod/discord/modules/settings'
 import { byProps } from '@revenge-mod/modules/finders/filters'
 import { getModule } from '@revenge-mod/modules/finders/get'
 import { instead } from '@revenge-mod/patcher'
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'
+import { lookupGeneratedIconComponent } from '@revenge-mod/utils/discord'
 import type { DiscordModules } from '@revenge-mod/discord/types'
 
 registerPlugin(
@@ -17,6 +18,12 @@ registerPlugin(
     },
     {
         start({ cleanup, logger }) {
+            const CircleInformationIcon = lookupGeneratedIconComponent(
+                'CircleInformationIcon',
+                'CircleInformationIcon-secondary',
+                'CircleInformationIcon-primary',
+            )
+
             function reset() {
                 getStore<{
                     initialize(): void
@@ -34,8 +41,10 @@ registerPlugin(
                     store.initialize()
                     unpatch()
 
-                    setTimeout(() => {
-                        refreshSettingsOverviewScreen(true)
+                    ToastActionCreators.open({
+                        key: 'staff-settings-action',
+                        content: 'Navigate out of Settings to apply changes',
+                        IconComponent: CircleInformationIcon,
                     })
                 })
             }

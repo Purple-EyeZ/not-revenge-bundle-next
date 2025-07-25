@@ -1,11 +1,6 @@
-import { ReactNavigationNative } from '@revenge-mod/externals/react-navigation'
 import { noop } from '@revenge-mod/utils/callback'
-import { findInTree } from '@revenge-mod/utils/tree'
-import { Constants } from '../../common'
 import { sLoaded } from '../../start'
-import { RootNavigationRef } from '../main_tabs_v2'
-import { sConfig, sSections, sSubscriptions } from './_internal'
-import type { NavigationState, PartialState } from '@react-navigation/core'
+import { sConfig, sRefresher, sSections, sSubscriptions } from './_internal'
 import type { DiscordModules } from '../../types'
 
 export type SettingsItem = DiscordModules.Modules.Settings.SettingsItem
@@ -101,71 +96,18 @@ export function addSettingsItemToSection(key: string, item: string) {
     }
 }
 
-const { CommonActions, StackActions } = ReactNavigationNative
+/**
+ * Refreshes the SettingsOverviewScreen.
+ */
+export function refreshSettingsOverviewScreen() {
+    sRefresher.overviewScreen = true
+    sRefresher.callOverviewScreen()
+}
 
 /**
- * Refreshes the SettingsOverviewScreen, applying any changes made to settings modules.
- *
- * @param renavigate Whether to renavigate instead of replacing the screen in the stack.
- * @returns Whether the SettingsOverviewScreen was refreshed.
+ * Refreshes the settings navigator.
  */
-export async function refreshSettingsOverviewScreen(renavigate?: boolean) {
-    const navigation = RootNavigationRef.getRootNavigationRef()
-    if (!navigation.isReady()) return
-
-    let state = navigation.getRootState()
-    // State with SettingsOverviewScreen
-    let settingsState = findInTree(state, isNavigationSettingsState)
-    // We're currently not on the settings screen, so we don't need to reset
-    if (!settingsState) return
-
-    if (renavigate) {
-        const mainState = findInTree(state, isNavigationMainState)
-        if (!mainState) return
-
-        navigation.dispatch({
-            ...CommonActions.goBack(),
-            target: mainState.key,
-        })
-
-        navigation.navigate(mainState.routes[mainState.index].name)
-
-        // Wait for navigation to complete and reset to the settings state
-        requestAnimationFrame(() => {
-            navigation.reset({
-                index: settingsState!.routes.length - 1,
-                routes: settingsState!.routes,
-            } as PartialState<NonNullable<typeof settingsState>>)
-        })
-    } else {
-        requestAnimationFrame(() => {
-            // Get updated state
-            state = navigation.getRootState()
-            settingsState = findInTree(state, isNavigationSettingsState)
-            if (!settingsState) return
-
-            const {
-                key: target,
-                routes: [{ name, key: source }],
-            } = settingsState
-
-            navigation.dispatch({
-                ...StackActions.replace(name),
-                source,
-                target,
-            })
-        })
-    }
-}
-
-function isNavigationMainState(state: any): state is NavigationState {
-    return Array.isArray(state.routes) && state.routes.length > 1
-}
-
-function isNavigationSettingsState(state: any): state is NavigationState {
-    return (
-        Array.isArray(state.routes) &&
-        state.routes[0]?.name ===
-            (Constants.UserSettingsSections as Record<string, string>).OVERVIEW
-    )
+export function refreshSettingsNavigator() {
+    sRefresher.navigator = true
+    sRefresher.callNavigator()
 }

@@ -1,32 +1,35 @@
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { getAssetIdByName } from '@revenge-mod/assets'
 import { styles } from '@revenge-mod/components/_'
 import Page from '@revenge-mod/components/Page'
 import SearchInput from '@revenge-mod/components/SearchInput'
 import { ActionSheetActionCreators } from '@revenge-mod/discord/actions'
 import { Design } from '@revenge-mod/discord/design'
-import { ReactNavigationNative } from '@revenge-mod/externals/react-navigation'
-import { FlashList } from '@revenge-mod/externals/shopify'
-import { InternalPluginFlags, pList, pMetadata } from '@revenge-mod/plugins/_'
+import {
+    isPluginEnabled,
+    isPluginEssential,
+    isPluginInternal,
+    pList,
+    pMetadata,
+} from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'
 import { debounce } from '@revenge-mod/utils/callback'
 import { useCallback, useMemo, useState } from 'react'
-import { useWindowDimensions, View } from 'react-native'
+import { View } from 'react-native'
 import { ClickOutsideProvider } from 'react-native-click-outside'
 import RevengeIcon from '~assets/RevengeIcon'
-import { InstalledPluginCard } from '../components/PluginCard'
+import { InstalledPluginMasonryFlashList } from '../components/PluginList'
+import PluginStatesProvider from '../components/PluginStateProvider'
 import {
     EnablePluginTooltipProvider,
     EssentialPluginTooltipProvider,
-    resetTooltips,
 } from '../components/TooltipProvider'
-import { useUpdateOnPluginStatesChange } from '../definitions/RevengePluginsSetting'
 import type { RouteProp } from '@react-navigation/core'
 import type { ReactNavigationParamList } from '@revenge-mod/externals/react-navigation'
-import type { AnyPlugin } from '@revenge-mod/plugins/_'
 import type { FilterAndSortActionSheetProps } from '../components/FilterAndSortActionSheet'
 import type { RouteNames, Setting } from '../constants'
 
-const { Text, Stack, IconButton, LayerScope } = Design
+const { Stack, IconButton, LayerScope } = Design
 
 const FiltersHorizontalIcon = getAssetIdByName('FiltersHorizontalIcon', 'png')!
 
@@ -34,13 +37,15 @@ export default function RevengePluginsSettingScreen() {
     return (
         <LayerScope>
             <ClickOutsideProvider>
-                <Page spacing={16}>
-                    <EssentialPluginTooltipProvider>
-                        <EnablePluginTooltipProvider>
-                            <Screen />
-                        </EnablePluginTooltipProvider>
-                    </EssentialPluginTooltipProvider>
-                </Page>
+                <PluginStatesProvider>
+                    <Page spacing={16}>
+                        <EssentialPluginTooltipProvider>
+                            <EnablePluginTooltipProvider>
+                                <Screen />
+                            </EnablePluginTooltipProvider>
+                        </EssentialPluginTooltipProvider>
+                    </Page>
+                </PluginStatesProvider>
             </ClickOutsideProvider>
         </LayerScope>
     )
@@ -51,19 +56,19 @@ const SearchDebounceTime = 100
 const Filters: FilterAndSortActionSheetProps['filters'] = {
     Enabled: {
         icon: getAssetIdByName('CircleCheckIcon')!,
-        filter: plugin => Boolean(plugin.flags & PluginFlags.Enabled),
+        filter: plugin => isPluginEnabled(plugin),
     },
     Disabled: {
         icon: getAssetIdByName('CircleXIcon')!,
-        filter: plugin => !(plugin.flags & PluginFlags.Enabled),
+        filter: plugin => !isPluginEnabled(plugin),
     },
     Internal: {
         icon: RevengeIcon,
-        filter: plugin => Boolean(plugin.flags & InternalPluginFlags.Internal),
+        filter: (_, meta) => isPluginInternal(meta),
     },
     Essential: {
         icon: getAssetIdByName('StarIcon')!,
-        filter: (_, iflags) => Boolean(iflags & InternalPluginFlags.Essential),
+        filter: (_, meta) => isPluginEssential(meta),
     },
 } satisfies FilterAndSortActionSheetProps['filters']
 const DefaultFilters: FilterAndSortActionSheetProps['filter'] = []
@@ -82,11 +87,9 @@ const Sorts = {
 } satisfies FilterAndSortActionSheetProps['sorts']
 
 function Screen() {
-    useUpdateOnPluginStatesChange()
-
-    const navigation = ReactNavigationNative.useNavigation()
+    const navigation = useNavigation()
     const route =
-        ReactNavigationNative.useRoute<
+        useRoute<
             RouteProp<
                 ReactNavigationParamList,
                 (typeof RouteNames)[typeof Setting.RevengePlugins]
@@ -108,18 +111,18 @@ function Screen() {
     const allPlugins = useMemo(
         () =>
             [...pList.values()].map(
-                plugin => [plugin, pMetadata.get(plugin)!.iflags] as const,
+                plugin => [plugin, pMetadata.get(plugin)!] as const,
             ),
         [],
     )
 
     const plugins = allPlugins
-        .filter(([plugin, iflags]) => {
+        .filter(([plugin, meta]) => {
             if (filter.length === 0) return true
             if (matchAll)
-                return filter.every(f => Filters[f].filter(plugin, iflags))
+                return filter.every(f => Filters[f].filter(plugin, meta))
 
-            return filter.some(f => Filters[f].filter(plugin, iflags))
+            return filter.some(f => Filters[f].filter(plugin, meta))
         })
         .filter(([plugin]) => {
             const { name, description, author } = plugin.manifest
@@ -132,8 +135,7 @@ function Screen() {
         })
         .sort(([a], [b]) => {
             const result = Sorts[sort as keyof typeof Sorts][1](a, b)
-            if (reverse) return -result
-            return result
+            return reverse ? -result : result
         })
 
     return (
@@ -182,46 +184,7 @@ function Screen() {
                     }
                 />
             </Stack>
-            <PluginMasonryFlashList plugins={plugins} />
+            <InstalledPluginMasonryFlashList plugins={plugins} />
         </>
-    )
-}
-
-function PluginMasonryFlashList({
-    plugins,
-}: {
-    plugins: (readonly [AnyPlugin, number])[]
-}) {
-    const { width, height } = useWindowDimensions()
-    const numColumns = Math.floor((width - 16) / 448)
-
-    return (
-        <FlashList.MasonryFlashList
-            data={plugins}
-            onScrollBeginDrag={resetTooltips}
-            fadingEdgeLength={16}
-            keyExtractor={([plugin]) => plugin.manifest.id}
-            estimatedListSize={{ width: width - 32, height: height - 160 }}
-            estimatedItemSize={116}
-            numColumns={numColumns}
-            ListEmptyComponent={NoPlugins}
-            renderItem={({ item: [plugin, iflags], columnIndex }) => (
-                <InstalledPluginCard
-                    key={plugin.manifest.id}
-                    enabled={Boolean(plugin.flags & PluginFlags.Enabled)}
-                    iflags={iflags}
-                    plugin={plugin}
-                    rightGap={columnIndex + 1 < numColumns}
-                />
-            )}
-        />
-    )
-}
-
-function NoPlugins() {
-    return (
-        <Text variant="heading-md/medium" style={{ textAlign: 'center' }}>
-            No plugins found. Try changing your query or filters.
-        </Text>
     )
 }

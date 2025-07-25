@@ -40,17 +40,13 @@ function EvalJSAlert() {
     const [awaitResult, setAwaitResult] = useState(true)
     const [showHidden, setShowHidden] = useState(true)
     const [inspectDepth, setInspectDepth] = useState(3)
-    const [loading, setLoading] = useState(false)
 
     return (
         <AlertModal
             actions={
-                <Stack>
+                <>
                     <Button
-                        loading={loading}
                         onPress={async function onPress() {
-                            setLoading(true)
-
                             const key = `_${Math.random()
                                 .toString(36)
                                 .substring(2, 15)}`
@@ -67,7 +63,7 @@ function EvalJSAlert() {
                                 else globalThis[key] = api
 
                                 const res = globalEvalWithSourceUrl(
-                                    `api=${key},{unscoped:revenge}=api;${code.current}`,
+                                    `api=${key},{unscoped:revenge}=api;undefined;${code.current}`,
                                     'Revenge:EvalJS',
                                 )
 
@@ -87,14 +83,13 @@ function EvalJSAlert() {
                                 alert(getErrorStack(e))
                             }
 
-                            setLoading(false)
                             AlertActionCreators.dismissAlert(AlertKey)
                         }}
                         text="Evaluate"
                         variant="primary"
                     />
                     <AlertActionButton text="Cancel" variant="secondary" />
-                </Stack>
+                </>
             }
             extraContent={
                 <Stack>

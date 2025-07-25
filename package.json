@@ -6,7 +6,7 @@
     "@biomejs/biome": "^2.1.2",
     "@parcel/watcher": "^2.5.1",
     "@react-native-clipboard/clipboard": "^1.16.3",
-    "@types/bun": "^1.2.18"
+    "@types/bun": "^1.2.19"
   },
   "peerDependencies": {
     "@react-navigation/core": "^7.10.1",
@@ -35,10 +35,10 @@
     "plugins/*"
   ],
   "dependencies": {
-    "@swc/core": "^1.13.0",
+    "@swc/core": "^1.13.2",
     "chalk": "^5.4.1",
     "react-native-click-outside": "^0.1.1",
-    "rolldown": "1.0.0-beta.28"
+    "rolldown": "1.0.0-beta.29"
   },
   "overrides": {
     "@react-native/community-cli-plugin": "npm:dry-uninstall",

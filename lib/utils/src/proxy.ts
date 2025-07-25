@@ -61,7 +61,7 @@ const _handler = {
         const target = unproxifyFromHint(hint)
         const val = Reflect.get(target!, p, recv)
 
-        if (_metas.get(hint)?.bind && val instanceof Function)
+        if (_metas.get(hint)?.bind && typeof val === 'function')
             return new Proxy(val, {
                 // If thisArg happens to be a proxified value, we will use the target object instead
                 apply: (fn, thisArg, args) =>

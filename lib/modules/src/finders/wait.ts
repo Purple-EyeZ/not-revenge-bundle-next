@@ -2,6 +2,7 @@ import { mInitialized } from '../metro/patches'
 import {
     onAnyModuleInitialized,
     onModuleFinishedImporting,
+    onModuleInitialized,
 } from '../metro/subscriptions'
 import { getInitializedModuleExports } from '../metro/utils'
 import {
@@ -151,21 +152,16 @@ export function waitForModuleByImportedPath<T = any>(
     callback: WaitForModulesCallback<T>,
     options?: BaseWaitForModulesOptions,
 ): WaitForModulesUnsubscribeFunction {
-    const unsub = onModuleFinishedImporting(
-        options?.all
-            ? (id, cmpPath) => {
-                  if (path === cmpPath) {
-                      unsub()
-                      callback(getInitializedModuleExports(id), id)
-                  }
-              }
-            : (id, cmpPath) => {
-                  if (mInitialized.has(id) && path === cmpPath) {
-                      unsub()
-                      callback(getInitializedModuleExports(id), id)
-                  }
-              },
-    )
+    const unsub = onModuleFinishedImporting((id, cmpPath) => {
+        if (path === cmpPath) {
+            unsub()
+            // Module is not fully initialized yet, so we need to wait for it
+            onModuleInitialized(id, () => {
+                if (!options?.all || mInitialized.has(id))
+                    callback(getInitializedModuleExports(id), id)
+            })
+        }
+    })
 
     return unsub
 }

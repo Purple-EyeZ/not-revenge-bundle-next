@@ -2,11 +2,7 @@ import { TypedEventEmitter } from '@revenge-mod/discord/common/utils'
 import { getErrorStack } from '@revenge-mod/utils/error'
 import { sleepReject } from '@revenge-mod/utils/promise'
 import { pUnscopedApi as uapi } from '../apis'
-import {
-    PluginFlags as Flag,
-    PluginFlags,
-    PluginStatus as Status,
-} from '../constants'
+import { PluginFlags as Flag, PluginStatus as Status } from '../constants'
 import {
     addPluginApiDecorator,
     decoratePluginApi,
@@ -22,6 +18,7 @@ import type {
     PluginApi,
     PluginApiExtensionsOptions,
     PluginCleanup,
+    PluginDependency,
     PluginManifest,
     PluginOptions,
     PreInitPluginApi,
@@ -127,9 +124,11 @@ export function registerPlugin<O extends PluginApiExtensionsOptions>(
         pImplicitDeps.add(plugin)
     }
     // Only add to pending if the plugin is enabled
-    else if (flags & PluginFlags.Enabled) pPending.add(plugin)
+    else if (isPluginEnabled(plugin)) pPending.add(plugin)
 
     pEmitter.emit('register', plugin, options)
+
+    return { id: manifest.id } satisfies PluginDependency
 }
 
 /**
@@ -147,7 +146,7 @@ export function getPluginDependencies(plugin: AnyPlugin): AnyPlugin[] {
             const dep = pList.get(depId)
 
             if (dep) {
-                if (dep.flags & PluginFlags.Enabled) deps.push(dep)
+                if (isPluginEnabled(dep)) deps.push(dep)
                 else
                     throw new Error(
                         `Plugin "${id}" depends on disabled plugin "${depId}"`,
@@ -166,13 +165,29 @@ export function getPluginDependencies(plugin: AnyPlugin): AnyPlugin[] {
     return (meta.dependencies = deps)
 }
 
+export function isPluginEnabled({ flags }: AnyPlugin): boolean {
+    return Boolean(flags & Flag.Enabled)
+}
+
+export function isPluginEssential({ iflags }: InternalPluginMeta): boolean {
+    return Boolean(iflags & InternalPluginFlags.Essential)
+}
+
+export function isPluginInternal({ iflags }: InternalPluginMeta): boolean {
+    return Boolean(iflags & InternalPluginFlags.Internal)
+}
+
+function guardPluginEnabled(plugin: AnyPlugin) {
+    if (!isPluginEnabled(plugin))
+        throw new Error(`Plugin "${plugin.manifest.id}" is not enabled`)
+}
+
 /**
  * Handles errors that occur in plugins.
  */
 async function handlePluginError(e: unknown, plugin: AnyPlugin) {
     plugin.errors.push(e)
     plugin.flags |= Flag.Errored
-    const { iflags } = pMetadata.get(plugin)!
 
     nativeLoggingHook(
         `\u001b[31mPlugin "${plugin.manifest.id}" encountered an error: ${getErrorStack(e)}\u001b[0m`,
@@ -182,14 +197,15 @@ async function handlePluginError(e: unknown, plugin: AnyPlugin) {
     plugin.api?.logger?.error('Plugin encountered an error', e)
     pEmitter.emit('errored', plugin, e)
 
-    if (!(iflags & InternalPluginFlags.Essential)) await plugin.disable()
+    if (!isPluginEssential(pMetadata.get(plugin)!)) await plugin.disable()
 }
 
 /**
  * Prepares the plugin API for the preInit lifecycle.
  */
-function preparePluginPreInit(plugin: AnyPlugin) {
+function tryPreparePluginPreInit(plugin: AnyPlugin) {
     const meta = pMetadata.get(plugin)!
+    if (meta.apiLevel >= PluginApiLevel.PreInit) return
 
     // Clear errors from previous runs
     plugin.errors = []
@@ -213,8 +229,10 @@ function preparePluginPreInit(plugin: AnyPlugin) {
 /**
  * Prepares the plugin API for the init lifecycle.
  */
-function preparePluginInit(plugin: AnyPlugin) {
+function tryPreparePluginInit(plugin: AnyPlugin) {
     const meta = pMetadata.get(plugin)!
+    if (meta.apiLevel >= PluginApiLevel.Init) return
+
     const api = plugin.api as InitPluginApi
 
     api.decorate = decorator => {
@@ -228,8 +246,10 @@ function preparePluginInit(plugin: AnyPlugin) {
 /**
  * Prepares the plugin API for the start lifecycle.
  */
-function preparePluginStart(plugin: AnyPlugin) {
+function tryPreparePluginStart(plugin: AnyPlugin) {
     const meta = pMetadata.get(plugin)!
+    if (meta.apiLevel >= PluginApiLevel.Start) return
+
     const api = plugin.api as PluginApi
 
     api.decorate = decorator => {
@@ -241,17 +261,25 @@ function preparePluginStart(plugin: AnyPlugin) {
 }
 
 /**
- * Disables a plugin.
+ * Disables a plugin, as well as all its dependents.
  */
 export async function disablePlugin(plugin: AnyPlugin) {
-    if (!(plugin.flags & Flag.Enabled))
-        throw new Error(`Plugin "${plugin.manifest.id}" is not enabled`)
+    guardPluginEnabled(plugin)
 
-    const iflags = pMetadata.get(plugin)!.iflags ?? 0
-    if (iflags & InternalPluginFlags.Essential)
+    const meta = pMetadata.get(plugin)!
+
+    if (isPluginEssential(meta))
         throw new Error(
             `Plugin "${plugin.manifest.id}" is essential and cannot be disabled`,
         )
+
+    const { dependents } = meta
+
+    await Promise.all(
+        dependents.map(dep => {
+            if (dep.flags & Flag.Enabled) return disablePlugin(dep)
+        }),
+    )
 
     // Stop the plugin if needed
     if (plugin.status && !(plugin.status & Status.Stopping))
@@ -263,55 +291,72 @@ export async function disablePlugin(plugin: AnyPlugin) {
 }
 
 /**
- * Enables a plugin.
+ * Enables a plugin, as well as all its dependencies.
  */
-export function enablePlugin(plugin: AnyPlugin, late: boolean) {
-    if (plugin.flags & Flag.Enabled)
+export async function enablePlugin(plugin: AnyPlugin) {
+    if (isPluginEnabled(plugin))
         throw new Error(`Plugin "${plugin.manifest.id}" is already enabled`)
+
+    await Promise.all(
+        getPluginDependencies(plugin).map(dep => {
+            if (dep.flags & Flag.Enabled) return
+            return runPluginLate(dep)
+        }),
+    )
 
     // TODO(plugins): write to storage
     plugin.flags |= Flag.Enabled
-    if (late) plugin.flags |= Flag.EnabledLate
 
     pEmitter.emit('enabled', plugin)
+}
+
+export async function runPluginLate(plugin: AnyPlugin) {
+    guardPluginEnabled(plugin)
+
+    if (plugin.status & Status.Started)
+        throw new Error(`Plugin "${plugin.manifest.id}" is already started`)
+
+    plugin.flags |= Flag.EnabledLate
+
+    await preInitPlugin(plugin)
+    await initPlugin(plugin)
+    await startPlugin(plugin)
 }
 
 /**
  * Runs the preInit lifecycle of a plugin.
  */
 export async function preInitPlugin(plugin: AnyPlugin) {
+    guardPluginEnabled(plugin)
+
     const {
         manifest: { id },
-        lifecycles,
     } = plugin
+
+    if (plugin.status & (Status.PreIniting | Status.PreInited))
+        throw new Error(
+            `Plugin preInit lifecycle for "${id}" is already running`,
+        )
+
+    tryPreparePluginPreInit(plugin)
+
+    const { lifecycles } = plugin
+    const { promises, handleError } = pMetadata.get(plugin)!
 
     try {
         if (!lifecycles.preInit) return
 
-        const meta = pMetadata.get(plugin)!
-        const { promises, handleError } = meta
-
-        if (!(plugin.flags & Flag.Enabled))
-            throw new Error(`Plugin "${id}" is not enabled`)
-
-        if (plugin.status & (Status.PreIniting | Status.PreInited))
-            throw new Error(
-                `Plugin preInit lifecycle for "${id}" is already running`,
-            )
-
-        preparePluginPreInit(plugin)
         plugin.status |= Status.PreIniting
 
         try {
             const prom = lifecycles.preInit(plugin.api as PreInitPluginApi)
             promises.push(prom)
             await prom
-
-            // plugin.disable() already handles, so it's in the try block
-            plugin.status |= Status.PreInited
-            plugin.status &= ~Status.PreIniting
         } catch (e) {
             await handleError(e)
+        } finally {
+            plugin.status |= Status.PreInited
+            plugin.status &= ~Status.PreIniting
         }
     } finally {
         pEmitter.emit('preInited', plugin)
@@ -322,27 +367,25 @@ export async function preInitPlugin(plugin: AnyPlugin) {
  * Runs the init lifecycle of a plugin.
  */
 export async function initPlugin(plugin: AnyPlugin) {
+    guardPluginEnabled(plugin)
+
     const {
         manifest: { id },
-        lifecycles,
     } = plugin
+
+    const meta = pMetadata.get(plugin)!
+
+    if (plugin.status & (Status.Initing | Status.Inited))
+        throw new Error(`Plugin init lifecycle for "${id}" is already running`)
+
+    tryPreparePluginPreInit(plugin)
+    tryPreparePluginInit(plugin)
+
+    const { lifecycles } = plugin
+    const { promises, handleError } = meta
 
     try {
         if (!lifecycles.init) return
-
-        const meta = pMetadata.get(plugin)!
-        const { promises, apiLevel, handleError } = meta
-
-        if (!(plugin.flags & Flag.Enabled))
-            throw new Error(`Plugin "${id}" is not enabled`)
-
-        if (plugin.status & (Status.Initing | Status.Inited))
-            throw new Error(
-                `Plugin init lifecycle for "${id}" is already running`,
-            )
-
-        if (apiLevel < PluginApiLevel.PreInit) preparePluginPreInit(plugin)
-        if (apiLevel < PluginApiLevel.Init) preparePluginInit(plugin)
 
         plugin.status |= Status.Initing
 
@@ -350,12 +393,11 @@ export async function initPlugin(plugin: AnyPlugin) {
             const prom = lifecycles.init(plugin.api as InitPluginApi)
             promises.push(prom)
             await prom
-
-            // plugin.disable() already handles, so it's in the try block
-            plugin.status |= Status.Inited
-            plugin.status &= ~Status.Initing
         } catch (e) {
             await handleError(e)
+        } finally {
+            plugin.status |= Status.Inited
+            plugin.status &= ~Status.Initing
         }
     } finally {
         pEmitter.emit('inited', plugin)
@@ -366,28 +408,24 @@ export async function initPlugin(plugin: AnyPlugin) {
  * Starts a plugin by running its start lifecycle.
  */
 export async function startPlugin(plugin: AnyPlugin) {
+    guardPluginEnabled(plugin)
+
     const {
         manifest: { id },
-        lifecycles,
     } = plugin
+
+    if (plugin.status & (Status.Starting | Status.Started))
+        throw new Error(`Plugin start lifecycle for "${id}" is already running`)
+
+    tryPreparePluginPreInit(plugin)
+    tryPreparePluginInit(plugin)
+    tryPreparePluginStart(plugin)
+
+    const { lifecycles } = plugin
+    const { promises, handleError } = pMetadata.get(plugin)!
 
     try {
         if (!lifecycles.start) return
-
-        const meta = pMetadata.get(plugin)!
-        const { promises, apiLevel, handleError } = meta
-
-        if (!(plugin.flags & Flag.Enabled))
-            throw new Error(`Plugin "${id}" is not enabled`)
-
-        if (plugin.status & (Status.Starting | Status.Started))
-            throw new Error(
-                `Plugin start lifecycle for "${id}" is already running`,
-            )
-
-        if (apiLevel < PluginApiLevel.PreInit) preparePluginPreInit(plugin)
-        if (apiLevel < PluginApiLevel.Init) preparePluginInit(plugin)
-        if (apiLevel < PluginApiLevel.Start) preparePluginStart(plugin)
 
         plugin.status |= Status.Starting
 
@@ -395,11 +433,11 @@ export async function startPlugin(plugin: AnyPlugin) {
             const prom = lifecycles.start(plugin.api as PluginApi)
             promises.push(prom)
             await prom
-
-            plugin.status |= Status.Started
-            plugin.status &= ~Status.Starting
         } catch (e) {
             await handleError(e)
+        } finally {
+            plugin.status |= Status.Started
+            plugin.status &= ~Status.Starting
         }
     } finally {
         pEmitter.emit('started', plugin)
@@ -410,21 +448,22 @@ export async function startPlugin(plugin: AnyPlugin) {
  * Stops a plugin by running its stop lifecycle and cleanup functions.
  */
 export async function stopPlugin(plugin: AnyPlugin) {
+    guardPluginEnabled(plugin)
+
     const {
         manifest: { id },
-        lifecycles,
     } = plugin
+
     const meta = pMetadata.get(plugin)!
-    const { promises, iflags, apiLevel } = meta
 
-    if (iflags & InternalPluginFlags.Essential)
+    if (isPluginEssential(meta))
         throw new Error(`Plugin "${id}" is essential and cannot be stopped`)
-
-    if (!(plugin.flags & Flag.Enabled))
-        throw new Error(`Plugin "${id}" is not enabled`)
 
     if (plugin.status & Status.Stopping)
         throw new Error(`Plugin "${id}" is already stopping`)
+
+    const { lifecycles } = plugin
+    const { promises, handleError } = meta
 
     // Wait for in-progress lifecycles to finish or timeout
     if (plugin.status & (Status.PreIniting | Status.Initing | Status.Starting))
@@ -436,17 +475,12 @@ export async function stopPlugin(plugin: AnyPlugin) {
             ),
         ]).catch(e => {
             plugin.flags |= Flag.ReloadRequired
-            handlePluginError(e, plugin)
+            return handlePluginError(e, plugin)
         })
     else if (
         !(plugin.status & (Status.PreInited | Status.Inited | Status.Started))
     )
         throw new Error(`Plugin "${id}" is not running`)
-
-    // Prepare APIs if needed
-    if (apiLevel < PluginApiLevel.PreInit) preparePluginPreInit(plugin)
-    if (apiLevel < PluginApiLevel.Init) preparePluginInit(plugin)
-    if (apiLevel < PluginApiLevel.Start) preparePluginStart(plugin)
 
     plugin.status |= Status.Stopping
 
@@ -460,7 +494,7 @@ export async function stopPlugin(plugin: AnyPlugin) {
                 ),
             ])
     } catch (e) {
-        await handlePluginError(e, plugin)
+        await handleError(e)
     } finally {
         // Run cleanups
         await cleanupPlugin(plugin, meta)

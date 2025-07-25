@@ -1,5 +1,8 @@
 import TableRowAssetIcon from '@revenge-mod/components/TableRowAssetIcon'
-import { registerSettingsItem } from '@revenge-mod/discord/modules/settings'
+import {
+    refreshSettingsNavigator,
+    registerSettingsItem,
+} from '@revenge-mod/discord/modules/settings'
 import { pEmitter } from '@revenge-mod/plugins/_'
 import { proxify } from '@revenge-mod/utils/proxy'
 import { useLayoutEffect } from 'react'
@@ -20,6 +23,8 @@ let NavigatorHeaderWithIcon = proxify(
 
 pEmitter.on('started', plugin => {
     if (plugin.SettingsComponent) {
+        refreshSettingsNavigator()
+
         const api = plugin.api as PluginApi<any>
 
         function PluginSettings({
