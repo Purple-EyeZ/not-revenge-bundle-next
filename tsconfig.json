@@ -14,5 +14,6 @@
       "~assets/*": ["./dist/assets/generated/*"]
     }
   },
-  "include": ["lib", "src"]
+  "include": ["lib", "src"],
+  "exclude": ["**/*.test.ts"]
 }

@@ -1,7 +1,15 @@
 import { EventEmitter } from 'node:events'
 import type { StackScreenProps } from '@react-navigation/stack'
 import type { ReactNavigationParamList } from '@revenge-mod/externals/react-navigation'
-import type { ComponentProps, ComponentType, FC, JSX, ReactNode } from 'react'
+import type {
+    ComponentProps,
+    ComponentType,
+    FC,
+    ReactElement,
+    ReactNode,
+    RefAttributes,
+    RefObject,
+} from 'react'
 import type {
     ImageSourcePropType,
     ImageStyle,
@@ -148,7 +156,7 @@ export namespace DiscordModules {
 
     export namespace Actions {
         export interface AlertActionCreators {
-            openAlert(key: string, alert: JSX.Element): void
+            openAlert(key: string, alert: ReactElement): void
             dismissAlert(key: string): void
             dismissAlerts(): void
             // TODO
@@ -235,7 +243,7 @@ export namespace DiscordModules {
         }
 
         export type UseTooltipFunction = (
-            ref: React.MutableRefObject<View | null>,
+            ref: RefObject<View | null>,
             props: UseTooltipFunctionProps,
         ) => unknown
 
@@ -248,7 +256,7 @@ export namespace DiscordModules {
 
         export interface BaseButtonProps
             extends PressableProps,
-                React.RefAttributes<View> {
+                RefAttributes<View> {
             disabled?: boolean
             size?: ButtonSize
             variant?:
@@ -416,6 +424,34 @@ export namespace DiscordModules {
 
         export type TableRowVariant = 'default' | 'danger'
 
+        export interface TableCheckboxRowProps
+            extends Omit<TableRowProps, 'trailing'> {
+            checked: boolean
+            value: string
+        }
+
+        export type TableCheckboxRow = FC<TableCheckboxRowProps>
+
+        export interface TableRadioGroupProps<T = string>
+            extends TableRowGroupProps {
+            children: ReactNode
+            onChange: (value: T) => void
+            defaultValue?: T
+        }
+
+        export interface TableRadioRowProps<T = any> extends TableRowProps {
+            label: string
+            value: T
+        }
+
+        export declare function TableRadioGroup<T>(
+            props: TableRadioGroupProps<T>,
+        ): ReactElement
+
+        export declare function TableRadioRow<T>(
+            props: TableRadioRowProps<T>,
+        ): ReactElement
+
         export interface TableRowProps {
             label: string
             subLabel?: string
@@ -547,8 +583,8 @@ export namespace DiscordModules {
             onValueChange: (value: number) => void
             onSlidingStart?: () => void
             onSlidingComplete?: (value: number) => void
-            startIcon?: React.ReactNode
-            endIcon?: React.ReactNode
+            startIcon?: ReactNode
+            endIcon?: ReactNode
         }
 
         export type Slider = FC<SliderProps>

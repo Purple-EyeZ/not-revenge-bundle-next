@@ -102,6 +102,9 @@ export interface Design {
     NavigatorHeader: DiscordModules.Components.NavigatorHeader
     Stack: DiscordModules.Components.Stack
     Slider: DiscordModules.Components.Slider
+    TableCheckboxRow: DiscordModules.Components.TableCheckboxRow
+    TableRadioGroup: typeof DiscordModules.Components.TableRadioGroup
+    TableRadioRow: typeof DiscordModules.Components.TableRadioRow
     TableRow: DiscordModules.Components.TableRow
     TableRowGroup: DiscordModules.Components.TableRowGroup
     TableRowTrailingText: DiscordModules.Components.TableRowTrailingText

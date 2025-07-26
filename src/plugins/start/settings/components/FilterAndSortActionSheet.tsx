@@ -93,7 +93,7 @@ export default function FilterAndSortActionSheet({
             <TableRadioGroup
                 title="Sort by"
                 defaultValue={sort_}
-                onChange={(v: string) => {
+                onChange={v => {
                     setSort(v)
                     setSort_(v)
                 }}
