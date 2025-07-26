@@ -15,7 +15,7 @@ export const pRootNodes = new Set<AnyPlugin>()
 export const pLeafOrSingleNodes = new Set<AnyPlugin>()
 
 // Visited non-leaf nodes
-const visited = new WeakSet<AnyPlugin>()
+const visited = new Set<AnyPlugin>()
 
 // Ordered list of plugins to be started
 export const pListOrdered: AnyPlugin[] = []
@@ -48,6 +48,7 @@ export function computePendingNodes() {
     pPending.clear()
     pLeafOrSingleNodes.clear()
     pRootNodes.clear()
+    visited.clear()
 }
 
 export function resolvePluginGraph(plugin: AnyPlugin) {

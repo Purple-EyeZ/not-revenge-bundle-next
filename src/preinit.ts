@@ -1,5 +1,4 @@
 import '@revenge-mod/utils/patches/proxy'
-import '@revenge-mod/utils/patches/objects'
 
 import {
     onModuleFirstRequired,

@@ -11,7 +11,12 @@ import {
     pDecoratorsStart,
     pImplicitDeps,
 } from './decorators'
-import { pLeafOrSingleNodes, pPending } from './dependency-graph'
+import {
+    computePendingNodes,
+    pLeafOrSingleNodes,
+    pListOrdered,
+    pPending,
+} from './dependency-graph'
 import type {
     InitPluginApi,
     Plugin,
@@ -299,8 +304,7 @@ export async function enablePlugin(plugin: AnyPlugin) {
 
     await Promise.all(
         getPluginDependencies(plugin).map(dep => {
-            if (dep.flags & Flag.Enabled) return
-            return runPluginLate(dep)
+            if (!isPluginEnabled(dep)) return enablePlugin(dep)
         }),
     )
 
@@ -318,9 +322,18 @@ export async function runPluginLate(plugin: AnyPlugin) {
 
     plugin.flags |= Flag.EnabledLate
 
-    await preInitPlugin(plugin)
-    await initPlugin(plugin)
-    await startPlugin(plugin)
+    // Reset previous computations
+    pListOrdered.length = 0
+    pPending.add(plugin)
+    computePendingNodes()
+
+    await Promise.all(
+        pListOrdered.map(async function runLate(plugin) {
+            await preInitPlugin(plugin)
+            await initPlugin(plugin)
+            await startPlugin(plugin)
+        }),
+    )
 }
 
 /**

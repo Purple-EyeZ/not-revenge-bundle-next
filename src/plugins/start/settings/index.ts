@@ -50,7 +50,7 @@ const pluginSettings = registerPlugin(
         },
     },
     PluginFlags.Enabled,
-    InternalPluginFlags.Internal,
+    InternalPluginFlags.Internal | InternalPluginFlags.Essential,
 )
 
 function patchSettingsNavigator(exports: any) {

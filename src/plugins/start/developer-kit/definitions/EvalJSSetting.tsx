@@ -99,7 +99,7 @@ function EvalJSAlert() {
                         onChange={v => {
                             code.current = v
                         }}
-                        placeholder="ReactNative.NativeModules.BundleUpdaterManager.reload()"
+                        placeholder="revenge.discord.native.BundleUpdaterManager.reload()"
                         size="md"
                     />
                     <TableRowGroup>

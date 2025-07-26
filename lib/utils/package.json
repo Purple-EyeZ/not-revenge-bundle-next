@@ -3,9 +3,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./patches/objects": {
-      "default": "./src/patches/object.ts"
-    },
     "./patches/proxy": {
       "default": "./src/patches/proxy.ts"
     },
