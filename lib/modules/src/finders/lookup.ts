@@ -170,8 +170,7 @@ export function* lookupModules(filter: Filter, options?: LookupModulesOptions) {
         if (reg) {
             cached = new Set()
 
-            for (const sId in reg) {
-                const flag = reg[sId]
+            for (const [sId, flag] of Object.entries(reg)) {
                 const id = Number(sId)
                 let exports: Metro.ModuleExports | undefined
 
@@ -297,8 +296,7 @@ export function lookupModule(filter: Filter, options?: LookupModulesOptions) {
         if (reg === null) return NotFoundResult
 
         if (reg)
-            for (const sId in reg) {
-                const flag = reg[sId]
+            for (const [sId, flag] of Object.entries(reg)) {
                 const id = Number(sId)
                 let exports: Metro.ModuleExports
 

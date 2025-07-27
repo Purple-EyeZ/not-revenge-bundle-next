@@ -154,15 +154,8 @@ export type BySingleProp = FilterGenerator<
  */
 export const bySingleProp = createFilterGenerator<Parameters<BySingleProp>>(
     ([prop], _, exports) => {
-        if (typeof exports === 'object' && prop in exports) {
-            let hasMultipleProperties = false
-            for (const _ in exports) {
-                if (hasMultipleProperties) return false
-                hasMultipleProperties = true
-            }
-
-            return true
-        }
+        if (typeof exports === 'object' && prop in exports)
+            return Object.keys(exports).length === 1
 
         return false
     },

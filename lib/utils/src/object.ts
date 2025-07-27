@@ -19,11 +19,11 @@ export function isObject(val: any): val is AnyObject {
  */
 export function mergeDeep(target: AnyObject, source: AnyObject) {
     if (isObject(target) && isObject(source))
-        for (const key in source)
-            if (isObject(source[key])) {
+        for (const [key, value] of Object.entries(source))
+            if (isObject(value)) {
                 if (!target[key]) Object.assign(target, { [key]: {} })
-                mergeDeep(target[key], source[key])
-            } else Object.assign(target, { [key]: source[key] })
+                mergeDeep(target[key], value)
+            } else Object.assign(target, { [key]: value })
 
     return target
 }
@@ -61,8 +61,10 @@ export function defineLazyProperties<T extends object>(
 ) {
     const descs: PropertyDescriptorMap = {}
 
-    for (const key in loaders)
-        descs[key] = lazyPropDesc<T, keyof typeof loaders>(key, loaders[key]!)
+    for (const [key, loader] of Object.entries(loaders) as Array<
+        [keyof T, (typeof loaders)[keyof T]]
+    >)
+        descs[key] = lazyPropDesc<T, keyof typeof loaders>(key, loader!)
 
     return Object.defineProperties(target, descs)
 }

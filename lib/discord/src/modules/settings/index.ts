@@ -75,7 +75,7 @@ export function registerSettingsItem(key: string, item: SettingsItem) {
 export function registerSettingsItems(record: Record<string, SettingsItem>) {
     Object.assign(sConfig, record)
     return () => {
-        for (const key in record) delete sConfig[key]
+        for (const key of Object.keys(record)) delete sConfig[key]
     }
 }
 

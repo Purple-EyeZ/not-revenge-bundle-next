@@ -1,3 +1,8 @@
+# Fix Rolldown
+
+diff --git a/node_modules/react-native-click-outside/.bun-tag-10ea960e763d9ac7 b/.bun-tag-10ea960e763d9ac7
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
 diff --git a/package.json b/package.json
 index 68a186a5974f324201aab5fcaa8653000771e1f6..5508586335b885029abbf821da7067ae68a98889 100644
 --- a/package.json
@@ -14,3 +19,57 @@ index 68a186a5974f324201aab5fcaa8653000771e1f6..5508586335b885029abbf821da7067ae
    "files": [
      "src",
      "lib",
+
+# Fix TypeScript errors
+
+diff --git a/src/Provider.tsx b/src/Provider.tsx
+index f2c4067a074532a74e398a0e287633c22d8a972c..711d1a77777139f6a3fac72fde5c9ac3a051fcab 100644
+--- a/src/Provider.tsx
++++ b/src/Provider.tsx
+@@ -1,7 +1,7 @@
+-import React, { FC } from 'react';
+-import { GestureResponderEvent, Platform, StyleSheet, View } from 'react-native';
+-import { onTouch, setIsTouch } from './utils/collection';
+-import { isInRange } from './utils/helpers';
++import React, { type FC } from 'react'
++import { type GestureResponderEvent, Platform, StyleSheet, View } from 'react-native'
++import { onTouch, setIsTouch } from './utils/collection'
++import { isInRange } from './utils/helpers'
+ 
+ type ClickOutsideProviderProps = {
+   activateOnSwipe?: boolean;
+diff --git a/src/useClickOutside.ts b/src/useClickOutside.ts
+index 211344ee83097ff11dfca09ae13c04cbe7e47791..9f5d6d561886aaa37e91735de372de8cdc3ec005 100644
+--- a/src/useClickOutside.ts
++++ b/src/useClickOutside.ts
+@@ -1,7 +1,7 @@
+-import React from 'react';
+-import type { View } from 'react-native';
+-import { register, unregister } from './utils/collection';
+-import { useFocusEffect } from './useFocusEffect';
++import React, { type RefObject } from 'react'
++import type { View } from 'react-native'
++import { register, unregister } from './utils/collection'
++import { useFocusEffect } from './useFocusEffect'
+ 
+ type HookConfig = {
+   triggerOnUnmount?: boolean;
+@@ -35,5 +35,5 @@ export const useClickOutside = <T = View>(callback: () => void, config?: HookCon
+     };
+   }, [config?.triggerOnUnmount]);
+ 
+-  return ref;
++  return ref as RefObject<T>;
+ };
+diff --git a/src/useFocusEffect.ts b/src/useFocusEffect.ts
+index d41fdb32f61049fd6e9823179d44b70ff68948a5..83b2c22f92a82951070d2558bab4210487e93476 100644
+--- a/src/useFocusEffect.ts
++++ b/src/useFocusEffect.ts
+@@ -1,5 +1,5 @@
+-import { useCallback, useEffect, useRef } from 'react';
+-import { AppState, AppStateStatus } from 'react-native';
++import { useCallback, useEffect, useRef } from 'react'
++import { AppState, type AppStateStatus } from 'react-native'
+ 
+ export const useFocusEffect = (activeCallback: () => void, inactiveCallback: () => void) => {
+   const appState = useRef(AppState.currentState);

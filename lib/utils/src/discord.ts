@@ -83,15 +83,8 @@ export const byGeneratedIconComponent = createFilterGenerator<
 >(
     (names, id, exports) => {
         if (typeof exports === 'object') {
-            if (typeof exports[names[0]] === 'function') {
-                let hasMultipleProps = false
-                for (const _ in exports) {
-                    if (hasMultipleProps) return false
-                    hasMultipleProps = true
-                }
-
-                return true
-            }
+            if (typeof exports[names[0]] === 'function')
+                return Object.keys(exports).length === 1
         } else {
             let filter = IconComponentFilter
 

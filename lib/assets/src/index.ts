@@ -45,11 +45,9 @@ export function* getCustomAssets(): Generator<CustomAsset> {
  * Yields all registered packager assets, including ones with same name but different types.
  */
 export function* getPackagerAssets(): Generator<PackagerAsset> {
-    for (const name in cache) {
-        const reg = cache[name]
-        for (const type in reg)
-            yield AssetsRegistry.getAssetByID(__r(reg[type]))
-    }
+    for (const reg of Object.values(cache))
+        for (const moduleId of Object.values(reg))
+            yield AssetsRegistry.getAssetByID(__r(moduleId))
 }
 
 /**
@@ -90,7 +88,11 @@ export function getAssetsByName(
 
 /**
  * Get an asset ID by its name.
- * If more than one asset is registered with the same name, this will return the one with the preferred type, or the first registered one.
+ *
+ * If more than one asset is registered with the same name, this will return the one with the preferred type.
+ *
+ * Unless **explicitly** calling with a preferred type,
+ * another asset with type mismatching the {@link setPreferredAssetType current preferred type} may be returned as a fallback.
  *
  * @param name The asset name.
  * @param type The preferred asset type, defaults to the current preferred type.
@@ -102,22 +104,15 @@ export function getAssetIdByName(
     const reg = cache[name]
     if (!reg) return
 
-    if (type) {
+    if (type !== undefined) {
         const mid = reg[type]
-        if (mid === undefined) return
-        return __r(mid)
+        return mid && __r(mid)
     }
 
     let mid = reg[_preferredType]
-    if (mid === undefined)
-        for (const t in reg) {
-            mid = reg[t]
-            break
-        }
+    mid ??= Object.values(reg)[0]
 
-    if (mid === undefined) return
-
-    return __r(mid)
+    return mid && __r(mid)
 }
 
 /**
