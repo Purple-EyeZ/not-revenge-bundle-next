@@ -39,8 +39,21 @@ export default async function build(dev = Dev, log = true) {
     const bundle = await rolldown({
         input: 'src/index.ts',
         platform: 'neutral',
-        experimental: {
-            strictExecutionOrder: true,
+        optimization: {
+            inlineConst: true,
+            // @ts-expect-error: Option not documented, but added in 1.0.0-beta.30
+            pifeForModuleWrappers: true,
+        },
+        preserveEntrySignatures: false,
+        transform: {
+            assumptions: {
+                pureGetters: true,
+                setPublicClassFields: true,
+                noDocumentAll: true,
+                // TODO: "Not implemented"
+                // objectRestNoSymbols: true,
+                // ignoreFunctionLength: true,
+            },
         },
         resolve: {
             tsconfigFilename: 'tsconfig.json',
@@ -147,7 +160,10 @@ export default async function build(dev = Dev, log = true) {
             compress: false,
             mangle: true,
         },
+        exports: 'none',
+        esModule: false,
         minifyInternalExports: true,
+        hoistTransitiveImports: false,
         file: 'dist/revenge.js',
         format: 'iife',
     })

@@ -17,7 +17,7 @@ import {
 } from './subscriptions/_internal'
 import type { Metro, RevengeMetro } from '../types'
 
-export let mInitializingId: Metro.ModuleID | null = null
+export let mInitializingId: Metro.ModuleID | undefined
 /** Uninitialized IDs (not blacklisted) */
 export const mUninitialized = new Set<Metro.ModuleID>()
 /** Initialized IDs (not blacklisted) */

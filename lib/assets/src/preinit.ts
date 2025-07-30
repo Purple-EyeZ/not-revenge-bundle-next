@@ -75,7 +75,7 @@ const unsubAR = waitForModules(
 
             // Cache and set moduleId for packager assets only
             if ((asset as PackagerAsset).__packager_asset) {
-                asset.moduleId = mInitializingId!
+                asset.moduleId = mInitializingId
                 cacheAsset(asset, mInitializingId!)
             }
 

@@ -113,13 +113,11 @@ registerPlugin(
                     instead(AnalyticsUtils.default, 'track', noop)
                     instead(AnalyticsUtils, 'trackNetworkAction', noop)
 
-                    for (const key in AnalyticsUtils.default
-                        .AnalyticsActionHandlers)
-                        instead(
-                            AnalyticsUtils.default.AnalyticsActionHandlers,
-                            key,
-                            noop,
-                        )
+                    const { AnalyticsActionHandlers: handlers } =
+                        AnalyticsUtils.default
+
+                    for (const key of Object.keys(handlers))
+                        instead(handlers, key, noop)
                 },
             )
 
