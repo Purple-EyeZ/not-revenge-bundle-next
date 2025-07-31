@@ -1,4 +1,4 @@
-import { sAfterRunApplication, sBeforeRunApplication } from './patches'
+import { sAfterRunApplication, sBeforeRunApplication } from './_internal'
 import type { RunApplicationCallback } from '@revenge-mod/react/types'
 
 /**

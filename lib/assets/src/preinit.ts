@@ -35,6 +35,8 @@ const byAssetSourceResolver = byDependencies([
     invariantId,
 ])
 
+const cachedOnly = { cached: true }
+
 // Tracking/caching assets
 const unsubAR = waitForModules(
     byProps<ReactNative.AssetsRegistry>('registerAsset'),
@@ -82,6 +84,7 @@ const unsubAR = waitForModules(
             return (asset.id = result)
         }
     },
+    cachedOnly,
 )
 
 /**
@@ -138,4 +141,5 @@ const unsubRAS = waitForModules(
         // @ts-expect-error
         rAS.addCustomSourceTransformer(({ asset }) => aOverrides.get(asset))
     },
+    cachedOnly,
 )

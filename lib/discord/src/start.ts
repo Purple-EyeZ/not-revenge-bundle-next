@@ -37,4 +37,7 @@ const unsubSRC = waitForModules(
             },
         )
     },
+    {
+        cached: true,
+    },
 )

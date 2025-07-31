@@ -44,6 +44,7 @@ const pluginSettings = registerPlugin(
                     patchSettingsOverviewScreen(exports)
                 },
                 {
+                    cached: true,
                     returnNamespace: true,
                 },
             )

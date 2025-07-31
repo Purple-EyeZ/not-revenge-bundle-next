@@ -43,6 +43,9 @@ registerPlugin(
                         },
                     )
                 },
+                {
+                    cached: true,
+                },
             )
 
             cleanup(unsubEB)

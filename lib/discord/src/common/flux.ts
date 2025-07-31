@@ -76,7 +76,7 @@ export function getStore<T>(
         return noop
     }
 
-    return waitForModules(byStoreName<T>(name), callback)
+    return waitForModules(byStoreName<T>(name), callback, { cached: true })
 }
 
 /// FILTERING
