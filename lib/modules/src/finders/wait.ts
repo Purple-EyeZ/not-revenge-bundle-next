@@ -108,16 +108,15 @@ export function waitForModules(
                     1,
                 )
 
-            const runCachedCallback = (id: Metro.ModuleID) => {
+            const runCachedCallback = (
+                id: Metro.ModuleID,
+                exports: Metro.ModuleExports,
+            ) => {
                 const flag = reg[id]
 
                 DEBUG_logWaitMatched(filter.key, id, flag, true)
                 callback(
-                    exportsFromFilterResultFlag(
-                        flag,
-                        getInitializedModuleExports(id),
-                        options,
-                    ),
+                    exportsFromFilterResultFlag(flag, exports, options),
                     id,
                 )
             }

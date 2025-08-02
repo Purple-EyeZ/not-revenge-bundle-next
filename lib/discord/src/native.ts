@@ -1,3 +1,4 @@
+import { getNativeModule } from '@revenge-mod/modules/native'
 import { proxify } from '@revenge-mod/utils/proxy'
 import type { DiscordNativeModules } from './types/native'
 
@@ -11,51 +12,44 @@ import type { DiscordNativeModules } from './types/native'
  */
 
 export let CacheModule: DiscordNativeModules.CacheModule = proxify(() => {
-    const module = __turboModuleProxy('NativeCacheModule') as typeof CacheModule
+    const module = getNativeModule<typeof CacheModule>('NativeCacheModule')
 
     if (module) return (CacheModule = module)
 })!
 
 export let FileModule: DiscordNativeModules.FileModule = proxify(() => {
-    const module = __turboModuleProxy('NativeFileModule') as typeof FileModule
+    const module = getNativeModule<typeof FileModule>('NativeFileModule')
 
     if (module) return (FileModule = module)
 })!
 
 export let ClientInfoModule: DiscordNativeModules.ClientInfoModule = proxify(
     () => {
-        const module = __turboModuleProxy(
+        const module = getNativeModule<typeof ClientInfoModule>(
             'NativeClientInfoModule',
-        ) as typeof ClientInfoModule
+        )
 
         if (module) return (ClientInfoModule = module)
     },
 )!
 
 export let DeviceModule: DiscordNativeModules.DeviceModule = proxify(() => {
-    const module = __turboModuleProxy(
-        'NativeDeviceModule',
-    ) as typeof DeviceModule
+    const module = getNativeModule<typeof DeviceModule>('NativeDeviceModule')
 
     if (module) return (DeviceModule = module)
 })!
 
 export let ThemeModule: DiscordNativeModules.ThemeModule = proxify(() => {
-    const module = __turboModuleProxy('NativeThemeModule') as typeof ThemeModule
+    const module = getNativeModule<typeof ThemeModule>('NativeThemeModule')
 
-    if (ThemeModule) return (ThemeModule = module)
+    if (module) return (ThemeModule = module)
 })!
-
-const nmp = nativeModuleProxy
 
 export let BundleUpdaterManager: DiscordNativeModules.BundleUpdaterManager =
     proxify(() => {
-        // Need try-catch here because if you access this before RN sets it up, it will throw an error
-        try {
-            const module =
-                nmp.BundleUpdaterManager as typeof BundleUpdaterManager
-            return (BundleUpdaterManager = module)
-        } catch {
-            return null
-        }
+        const module = getNativeModule<typeof BundleUpdaterManager>(
+            'BundleUpdaterManager',
+        )
+
+        if (module) return (BundleUpdaterManager = module)
     })!

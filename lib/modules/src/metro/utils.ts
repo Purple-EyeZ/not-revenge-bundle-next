@@ -50,6 +50,6 @@ export function isModuleExportBad(
         // Is it a proxy? (discord-intl has proxy exports)
         isProxy(exp) ||
         // Does it have some non-existent key? (Turbo modules)
-        (!exp.__proto__ && '\u0001' in exp)
+        (typeof exp === 'object' && '\u0001' in exp)
     )
 }
