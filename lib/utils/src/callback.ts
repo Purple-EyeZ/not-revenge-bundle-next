@@ -12,4 +12,17 @@ export function debounce<F extends (...args: any[]) => any>(
         })
 }
 
+const now = (cb: () => any) => {
+    cb()
+}
+
+/**
+ * A function that runs the callback as soon as possible.
+ * @param cb The callback to run.
+ */
+export const asap = (cb: (...args: any[]) => any) => {
+    // @ts-expect-error
+    ;(HermesInternal.enqueueJob ?? setImmediate ?? now)(cb)
+}
+
 export const noop = () => {}

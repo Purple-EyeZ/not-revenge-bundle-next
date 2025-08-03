@@ -3,6 +3,7 @@
  * This is especially useful for blacklisting exports that cannot be patched.
  */
 
+import { asap } from './callback'
 import { getCurrentStack } from './error'
 import { pTargets } from './patches/proxy'
 
@@ -141,13 +142,7 @@ export function proxify<T>(signal: () => T, options?: ProxifyOptions): T {
         // Prevent race conditions where proxified values with a self modifying signal gets called,
         // modifying the original value to a non-proxified value, causing subsequent destructure() calls to fail
 
-        (
-            // biome-ignore format: Don't format this
-            // @ts-expect-error: Internal function, not available in all environments
-            HermesInternal.enqueueJob ??
-            globalThis.setImmediate ??
-            ((x: () => void) => x())
-        )(() => {
+        asap(() => {
             if (unproxifyFromHint(hint) == null)
                 DEBUG_warnNullishProxifiedValue()
         })

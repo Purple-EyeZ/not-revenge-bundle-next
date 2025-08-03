@@ -62,9 +62,9 @@ function EvalJSAlert() {
                                 // @ts-expect-error
                                 else globalThis[key] = api
 
-                                const res = globalEvalWithSourceUrl(
-                                    `api=${key},{unscoped:revenge}=api;undefined;${code.current}`,
-                                    'Revenge:EvalJS',
+                                // biome-ignore lint/security/noGlobalEval: Intentional
+                                const res = eval(
+                                    `var api=${key},{unscoped:revenge}=api;undefined;${code.current}//# sourceURL=Revenge:EvalJS`,
                                 )
 
                                 alert(

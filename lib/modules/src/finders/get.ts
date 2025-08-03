@@ -1,4 +1,4 @@
-import { noop } from '@revenge-mod/utils/callback'
+import { asap, noop } from '@revenge-mod/utils/callback'
 import {
     lookupModule,
     lookupModuleByImportedPath,
@@ -88,7 +88,11 @@ export function getModule(
     if (max === 1) {
         const [exports, id] = lookupModule(filter, options!)
         if (id !== undefined) {
-            callback(exports, id)
+            // Run callback at the end of the event loop
+            // This ensures that the noop is returned first
+            asap(() => {
+                callback(exports, id)
+            })
             return noop
         }
     } else
