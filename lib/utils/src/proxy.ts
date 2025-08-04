@@ -152,13 +152,12 @@ export function proxify<T>(signal: () => T, options?: ProxifyOptions): T {
 
 /**
  * Get the value of a proxified value at the current moment.
+ * Returns the same value if not a proxified value.
  *
  * @see {@link proxify} for more documentation.
  *
  * @param proxified The proxified value.
- * @returns The unproxified value.
- *
- * @throws {TypeError} If the value is not a proxified value.
+ * @returns The unproxified value, or the value if it's not a proxified value.
  *
  * @example Without cache
  * ```ts
@@ -180,8 +179,7 @@ export function proxify<T>(signal: () => T, options?: ProxifyOptions): T {
  */
 export function unproxify<T extends object>(proxified: T): T {
     const hint = getProxyTarget(proxified)
-    if (!hint)
-        throw new TypeError(`${typeof proxified} is not a proxified value`)
+    if (!hint) return proxified
     return unproxifyFromHint(hint)
 }
 

@@ -16,7 +16,7 @@ export * as utils from './utils'
 const { loose, relative } = byDependencies
 
 // ../discord_common/js/packages/logger/Logger.tsx
-export const [Logger] = lookupModule(
+export const [Logger, LoggerModuleId] = lookupModule(
     byName<typeof DiscordModules.Logger>('Logger'),
 ) as [typeof DiscordModules.Logger, Metro.ModuleID]
 
@@ -28,9 +28,21 @@ export const [Tokens, TokensModuleId] = lookupModule(byProps('RawColor')) as [
 
 const OnlyImportTrackerDep = [2]
 
+/**
+ * If you need to use this ID, unproxify {@link Constants} first.
+ *
+ * ```js
+ * preinit() {
+ *   unproxify(Constants)
+ *   // Module ID will now be set!
+ *   ConstantsModuleId // ...
+ * }
+ * ```
+ */
+export let ConstantsModuleId: Metro.ModuleID | undefined
 export let Constants: DiscordModules.Constants = proxify(
     () => {
-        const [module] = lookupModule(
+        const [module, id] = lookupModule(
             preferExports(
                 byProps<DiscordModules.Constants>('ME'),
 
@@ -49,7 +61,10 @@ export let Constants: DiscordModules.Constants = proxify(
             ),
         )
 
-        if (module) return (Constants = module)
+        if (module) {
+            ConstantsModuleId = id
+            return (Constants = module)
+        }
     },
     { hint: {} },
 )!

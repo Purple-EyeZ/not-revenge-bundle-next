@@ -16,6 +16,7 @@ import { getModuleDependencies } from '@revenge-mod/modules/metro/utils'
 import { proxify } from '@revenge-mod/utils/proxy'
 import { aOverrides } from './_internal'
 import { cacheAsset, cached } from './caches'
+import type { Metro } from '@revenge-mod/modules/types'
 import type { ReactNative } from '@revenge-mod/react/types'
 import type { Asset, PackagerAsset } from './types'
 
@@ -88,18 +89,17 @@ const unsubAR = waitForModules(
 )
 
 /**
- * If you need to use this ID before assets-registry is initialized, interact with AssetsRegistry proxy first.
+ * If you need to use this ID, unproxify {@link AssetsRegistry} first.
  *
  * ```js
  * preinit() {
- *   AssetsRegistry.getAssetByID(0)
+ *   unproxify(AssetsRegistry)
  *   // Module ID will now be set!
  *   AssetsRegistryModuleId // ...
  * }
  * ```
  */
-export let AssetsRegistryModuleId: number | undefined
-
+export let AssetsRegistryModuleId: Metro.ModuleID | undefined
 export let AssetsRegistry: ReactNative.AssetsRegistry = proxify(() => {
     for (const [, id] of lookupModules(byDependencies([[]]), {
         initialize: false,
