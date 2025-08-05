@@ -29,7 +29,10 @@ export * from './revenge'
 
 export namespace DiscordModules {
     export namespace Flux {
-        export type DispatcherPayload = any
+        export interface DispatcherPayload {
+            type: string
+            [key: PropertyKey]: any
+        }
         export type DispatcherDependency = any
 
         export interface StoreChangeCallbacks {

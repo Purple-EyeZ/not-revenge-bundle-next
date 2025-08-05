@@ -23,7 +23,6 @@ import type { Asset, PackagerAsset } from './types'
 const { relative } = byDependencies
 
 const [, _classCallCheckId] = lookupModule(byName('_classCallCheck'))
-const [, invariantId] = lookupModule(byName('invariant'))
 const [, _createClassId] = lookupModule(byName('_createClass'))
 
 // https://github.com/facebook/react-native/blob/main/packages/react-native/Libraries/Image/AssetSourceResolver.js
@@ -33,7 +32,7 @@ const byAssetSourceResolver = byDependencies([
     relative(1),
     relative(2),
     undefined,
-    invariantId,
+    undefined,
 ])
 
 const cachedOnly = { cached: true }

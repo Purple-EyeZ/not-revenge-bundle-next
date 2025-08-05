@@ -52,10 +52,7 @@ export function onModuleInitialized(
     callback: ModuleInitializedCallback,
 ) {
     let set = sInitialize.get(id)
-    if (!set) {
-        set = new Set()
-        sInitialize.set(id, set)
-    }
+    if (!set) sInitialize.set(id, (set = new Set()))
 
     set.add(callback)
     return () => {
@@ -115,10 +112,7 @@ export function onModuleFirstRequired(
     callback: ModuleFirstRequiredCallback,
 ) {
     let set = sRequire.get(id)
-    if (!set) {
-        set = new Set()
-        sRequire.set(id, set)
-    }
+    if (!set) sRequire.set(id, (set = new Set()))
 
     set.add(callback)
     return () => {

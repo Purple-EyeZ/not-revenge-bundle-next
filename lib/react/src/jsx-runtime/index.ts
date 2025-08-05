@@ -37,10 +37,7 @@ export function afterJSX<E extends ElementType>(
     patch: AfterJSXCallback<E>,
 ) {
     let patches = jPatches.get(type)
-    if (!patches) {
-        patches = {}
-        jPatches.set(type, patches)
-    }
+    if (!patches) jPatches.set(type, (patches = {}))
 
     const set = (patches.after ??= new Set())
 
@@ -64,10 +61,7 @@ export function beforeJSX<E extends ElementType>(
     patch: BeforeJSXCallback<E>,
 ) {
     let patches = jPatches.get(type)
-    if (!patches) {
-        patches = {}
-        jPatches.set(type, patches)
-    }
+    if (!patches) jPatches.set(type, (patches = {}))
 
     const set = (patches.before ??= new Set())
 
@@ -91,10 +85,7 @@ export function insteadJSX<E extends ElementType>(
     patch: InsteadJSXCallback<E>,
 ) {
     let patches = jPatches.get(type)
-    if (!patches) {
-        patches = {}
-        jPatches.set(type, patches)
-    }
+    if (!patches) jPatches.set(type, (patches = {}))
 
     const set = (patches.instead ??= new Set())
 

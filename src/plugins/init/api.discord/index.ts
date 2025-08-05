@@ -36,6 +36,9 @@ registerPlugin(
                 design: () => {
                     return require('@revenge-mod/discord/design')
                 },
+                flux: () => {
+                    return require('@revenge-mod/discord/flux')
+                },
                 native: () => {
                     return require('@revenge-mod/discord/native')
                 },

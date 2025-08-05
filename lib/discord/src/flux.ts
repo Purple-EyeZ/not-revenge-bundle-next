@@ -1,0 +1,92 @@
+import { Dispatcher } from './common/flux'
+import type { DiscordModules } from './types'
+
+const fPatchesAll: Set<FluxEventDispatchPatch> = new Set()
+const fPatches: Map<string, Set<FluxEventDispatchPatch>> = new Map()
+
+export type FluxEventDispatchPatch = (
+    payload: DiscordModules.Flux.DispatcherPayload,
+) => DiscordModules.Flux.DispatcherPayload | undefined | void
+
+;(Dispatcher._interceptors ??= []).unshift(payload => {
+    let res: typeof payload | undefined | void = payload
+
+    for (const patch of fPatchesAll)
+        try {
+            res = patch(res!)
+            if (!res) break
+        } catch {}
+
+    if (res) {
+        const specifics = fPatches.get(payload.type)
+        if (specifics?.size)
+            for (const patch of specifics)
+                try {
+                    res = patch(res!)
+                    if (!res) break
+                } catch {}
+    }
+
+    return !res
+})
+
+/**
+ * Registers a patch for all Flux events.
+ *
+ * @see {@link onFluxEventDispatched} for more details.
+ *
+ * @param patch The patch function to apply when any Flux event is dispatched.
+ * @returns A function that can be used to remove the patch.
+ */
+export function onAnyFluxEventDispatched(patch: FluxEventDispatchPatch) {
+    fPatchesAll.add(patch)
+
+    return () => {
+        fPatchesAll.delete(patch)
+    }
+}
+
+/**
+ * Registers a patch for a specific Flux event type.
+ * @param type The type of the Flux event to patch.
+ * @param patch The patch function to apply when the event is dispatched.
+ * @returns A function that can be used to remove the patch.
+ *
+ * @example Blocking the disptach
+ * ```ts
+ * // Returning falsy values will prevent the event from being dispatched.
+ * onFluxEventDispatched('TYPING_START', () => {})
+ * ```
+ *
+ * @example Modifying the payload
+ * ```ts
+ * onFluxEventDispatched('TYPING_START', payload => {
+ *   // Send the typing event to this channel instead.
+ *   payload.channelId = '123456789012345678'
+ *   // Make sure to return the modified payload!
+ *   return payload
+ * })
+ * ```
+ *
+ * @example Reading and passing through the payload
+ * ```ts
+ * onFluxEventDispatched('TYPING_START', payload => {
+ *   console.log('Typing started:', payload)
+ *   // Do nothing, just return the payload.
+ *   return payload
+ * })
+ * ```
+ */
+export function onFluxEventDispatched(
+    type: DiscordModules.Flux.DispatcherPayload['type'],
+    patch: FluxEventDispatchPatch,
+) {
+    let set = fPatches.get(type)
+    if (!set) fPatches.set(type, (set = new Set<FluxEventDispatchPatch>()))
+
+    set.add(patch)
+
+    return () => {
+        set.delete(patch)
+    }
+}

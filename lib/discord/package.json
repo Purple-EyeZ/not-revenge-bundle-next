@@ -21,6 +21,9 @@
     "./design": {
       "default": "./src/design.ts"
     },
+    "./flux": {
+      "default": "./src/flux.ts"
+    },
     "./native": {
       "default": "./src/native.ts"
     },

@@ -4,6 +4,7 @@ export interface PluginApiDiscord {
     actions: PluginApiDiscord.Actions
     common: PluginApiDiscord.Common
     design: PluginApiDiscord.Design
+    flux: PluginApiDiscord.Flux
     modules: PluginApiDiscord.Modules
     native: PluginApiDiscord.Native
 }
@@ -12,6 +13,7 @@ export namespace PluginApiDiscord {
     export type Actions = typeof import('@revenge-mod/discord/actions')
     export type Common = typeof import('@revenge-mod/discord/common')
     export type Design = typeof import('@revenge-mod/discord/design')
+    export type Flux = typeof import('@revenge-mod/discord/flux')
     export type Native = typeof import('@revenge-mod/discord/native')
 
     export interface Modules {
