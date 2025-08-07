@@ -70,7 +70,7 @@ To update to Revenge Next from Revenge Classic, follow these steps:
 Revenge Next is updated regularly with new features and bug fixes. To update to the latest build, follow these steps:
 
 1. Host a HTTP server that points to a new `revenge.bundle` file.
-2. Head to **Settings** > **Revenge** > **Developer**.
+2. Head to **Settings** > **Developer** (under the **Revenge** section).
 3. Tap on the **Evaluate JavaScript** option.
 4. Paste and evaluate the following snippet. Make sure to modify the URL to point to your newly hosted `revenge.bundle` file:
 

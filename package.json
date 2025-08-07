@@ -6,7 +6,9 @@
     "@biomejs/biome": "^2.1.3",
     "@parcel/watcher": "^2.5.1",
     "@react-native-clipboard/clipboard": "^1.16.3",
-    "@types/bun": "^1.2.19"
+    "@types/bun": "^1.2.19",
+    "@uwu/treetype": "^1.1.1",
+    "rolldown-plugin-dts": "^0.15.4"
   },
   "peerDependencies": {
     "@react-navigation/core": "^7.10.1",
@@ -22,7 +24,8 @@
   "private": true,
   "scripts": {
     "build": "bun --bun run scripts/build.ts",
-    "dev": "bun --bun run scripts/dev.ts"
+    "dev": "bun --bun run scripts/dev.ts",
+    "types": "bun --bun run scripts/types.ts"
   },
   "trustedDependencies": [
     "@biomejs/biome",
