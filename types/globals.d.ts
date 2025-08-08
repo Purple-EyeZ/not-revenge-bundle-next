@@ -1,5 +1,3 @@
-// All of these typings are exported, be careful what you export here!
-
 import type { Metro } from '@revenge-mod/modules/types'
 import type {
     ImageProps,
@@ -25,6 +23,8 @@ declare module 'react' {
 /// HERMES
 
 declare global {
+    const HermesInternal: HermesInternalObject
+
     function setTimeout(
         cb: (...args: unknown[]) => unknown,
         timeout?: number,
@@ -56,6 +56,10 @@ declare global {
         /// PROMISE POLYFILLS FROM: https://github.com/then/promise
         /// AND: https://github.com/facebook/hermes/blob/main/lib/InternalBytecode/01-Promise.js
         _h: 0 | 1 | 2
+        /**
+         * The resolved value of the promise, if it has been resolved.
+         */
+        _j: any
     }
 
     type HermesPromiseRejectionHandler = (
@@ -103,7 +107,7 @@ declare global {
 
 declare global {
     var nativeModuleProxy: Record<string, unknown>
-    function __turboModuleProxy(name: string): unknown
+    var __turboModuleProxy: ((name: string) => unknown) | undefined
     function nativeLoggingHook(str: string, level: number): void
     function alert(message: unknown): void
 
@@ -111,6 +115,4 @@ declare global {
     var performance: {
         now(): number
     }
-
-    var globalEvalWithSourceUrl: (code: string, sourceURL: string) => any
 }

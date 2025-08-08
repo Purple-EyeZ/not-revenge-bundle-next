@@ -121,7 +121,6 @@ function handleFactoryCall(
                     mInitialized.add(mInitializingId)
                     break
 
-                // @ts-expect-error: Intentional
                 // biome-ignore lint/suspicious/noFallthroughSwitchClause: Intentional
                 case 'object': {
                     if (Object.keys(exports).length) {

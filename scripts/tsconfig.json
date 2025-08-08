@@ -1,8 +1,10 @@
 {
-  "extends": "@revenge-mod/types/tsconfig",
   "compilerOptions": {
     "module": "ESNext",
     "target": "ESNext",
-    "types": ["node/timers"]
+    "moduleResolution": "Bundler",
+    "paths": {
+      "pkg:*": ["../lib/*/package.json"]
+    }
   }
 }

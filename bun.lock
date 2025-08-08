@@ -14,7 +14,6 @@
         "@parcel/watcher": "^2.5.1",
         "@react-native-clipboard/clipboard": "^1.16.3",
         "@types/bun": "^1.2.19",
-        "@uwu/treetype": "^1.1.1",
         "rolldown-plugin-dts": "^0.15.4",
       },
       "peerDependencies": {
@@ -55,9 +54,6 @@
     },
     "lib/storage": {
       "name": "@revenge-mod/storage",
-    },
-    "lib/types": {
-      "name": "@revenge-mod/types",
     },
     "lib/utils": {
       "name": "@revenge-mod/utils",
@@ -225,8 +221,6 @@
 
     "@revenge-mod/storage": ["@revenge-mod/storage@workspace:lib/storage"],
 
-    "@revenge-mod/types": ["@revenge-mod/types@workspace:lib/types"],
-
     "@revenge-mod/utils": ["@revenge-mod/utils@workspace:lib/utils"],
 
     "@rolldown/binding-android-arm64": ["@rolldown/binding-android-arm64@1.0.0-beta.30", "", { "os": "android", "cpu": "arm64" }, "sha512-4j7QBitb/WMT1fzdJo7BsFvVNaFR5WCQPdf/RPDHEsgQIYwBaHaL47KTZxncGFQDD1UAKN3XScJ0k7LAsZfsvg=="],
@@ -312,8 +306,6 @@
     "@types/yargs": ["@types/yargs@17.0.33", "", { "dependencies": { "@types/yargs-parser": "*" } }, "sha512-WpxBCKWPLr4xSsHgz511rFJAM+wS28w2zEO1QDNY5zM/S8ok70NNfztH0xwhqKyaK0OHCbN98LDAZuy1ctxDkA=="],
 
     "@types/yargs-parser": ["@types/yargs-parser@21.0.3", "", {}, "sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ=="],
-
-    "@uwu/treetype": ["@uwu/treetype@1.1.1", "", { "peerDependencies": { "typescript": "^5.0.0" }, "bin": { "treetype": "dist/cli.js" } }, "sha512-sts8RcR8DzG6B2gnt3tbeSrn2N/ShI+3wVOWZHWtFT1fgrw/aDBbV6ePvXFobG0AKUrt/AQ5zV5E3JeX0P37eQ=="],
 
     "abort-controller": ["abort-controller@3.0.0", "", { "dependencies": { "event-target-shim": "^5.0.0" } }, "sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg=="],
 

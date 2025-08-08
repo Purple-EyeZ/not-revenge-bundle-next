@@ -7,7 +7,6 @@
     "@parcel/watcher": "^2.5.1",
     "@react-native-clipboard/clipboard": "^1.16.3",
     "@types/bun": "^1.2.19",
-    "@uwu/treetype": "^1.1.1",
     "rolldown-plugin-dts": "^0.15.4"
   },
   "peerDependencies": {

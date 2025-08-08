@@ -5,6 +5,9 @@
   "exports": {
     ".": {
       "default": "./src/index.ts"
+    },
+    "./types": {
+      "types": "./src/types.ts"
     }
   }
 }

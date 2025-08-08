@@ -11,4 +11,4 @@ declare global {
     ): void
 }
 
-export type * from '@revenge-mod/types'
+export * from './globals'

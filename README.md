@@ -81,3 +81,41 @@ Revenge Next is updated regularly with new features and bug fixes. To update to 
     ```
 
 5. Restart Discord.
+
+## 👷 Developing with Revenge Next
+
+You'll need to have [Bun](https://bun.com/) installed. Once you have Bun, follow these steps:
+
+```sh
+# Install dependencies
+bun install
+```
+
+---
+
+```sh
+# Build Revenge Next
+bun run build
+
+# Build Revenge Next with debugging enabled (slow, don't use in production)
+bun run build --dev
+```
+
+```sh
+# Start the development server
+bun run dev
+
+# Build as production
+bun run dev --prod
+```
+
+<sub>Builds are generated at `dist/revenge.bundle`.</sub>
+
+```sh
+# Build types for external consumers
+bun run types
+```
+
+<sub>Types are generated at `dist/types`. To consume, include `<dir>/globals.d.ts`, and map `@revenge-mod/*` to `<dir>/lib/*`.</sub>
+<br>
+<sub>Bundlers will need to map imports to property access on `revenge` turning `kebab-case` and `snake_case` to `camelCase`.</sub>
