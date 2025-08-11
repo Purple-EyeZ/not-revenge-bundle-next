@@ -18,9 +18,8 @@ export namespace PluginApiDiscord {
 
     export interface Modules {
         mainTabsV2: typeof import('@revenge-mod/discord/modules/main_tabs_v2')
-        settings: typeof import('@revenge-mod/discord/modules/settings') & {
-            renderer: typeof import('@revenge-mod/discord/modules/settings/renderer')
-        }
+        settings: typeof import('@revenge-mod/discord/modules/settings') &
+            typeof import('@revenge-mod/discord/modules/settings/renderer')
     }
 }
 

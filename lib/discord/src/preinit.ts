@@ -21,3 +21,5 @@ export const [AppStartPerformance] = lookupModule(
 ) as [DiscordModules.AppStartPerformance, Metro.ModuleID]
 
 AppStartPerformance.mark('👊', 'Pre-init')
+
+import './patches/flux'

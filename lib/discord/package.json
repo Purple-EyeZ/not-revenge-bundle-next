@@ -19,7 +19,7 @@
       "default": "./src/design.ts"
     },
     "./flux": {
-      "default": "./src/flux.ts"
+      "default": "./src/flux/index.ts"
     },
     "./native": {
       "default": "./src/native.ts"

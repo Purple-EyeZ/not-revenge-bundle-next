@@ -1,34 +1,9 @@
-import { Dispatcher } from './common/flux'
-import type { DiscordModules } from './types'
+import { fPatches, fPatchesAll } from '../patches/flux'
+import type { DiscordModules } from '../types'
 
-const fPatchesAll: Set<FluxEventDispatchPatch> = new Set()
-const fPatches: Map<string, Set<FluxEventDispatchPatch>> = new Map()
-
-export type FluxEventDispatchPatch = (
-    payload: DiscordModules.Flux.DispatcherPayload,
-) => DiscordModules.Flux.DispatcherPayload | undefined | void
-
-;(Dispatcher._interceptors ??= []).unshift(payload => {
-    let res: typeof payload | undefined | void = payload
-
-    for (const patch of fPatchesAll)
-        try {
-            res = patch(res!)
-            if (!res) break
-        } catch {}
-
-    if (res) {
-        const specifics = fPatches.get(payload.type)
-        if (specifics?.size)
-            for (const patch of specifics)
-                try {
-                    res = patch(res!)
-                    if (!res) break
-                } catch {}
-    }
-
-    return !res
-})
+export type FluxEventDispatchPatch<T extends object = object> = (
+    payload: DiscordModules.Flux.DispatcherPayload & T,
+) => (DiscordModules.Flux.DispatcherPayload & T) | undefined | void
 
 /**
  * Registers a patch for all Flux events.
@@ -77,9 +52,9 @@ export function onAnyFluxEventDispatched(patch: FluxEventDispatchPatch) {
  * })
  * ```
  */
-export function onFluxEventDispatched(
+export function onFluxEventDispatched<T extends object = object>(
     type: DiscordModules.Flux.DispatcherPayload['type'],
-    patch: FluxEventDispatchPatch,
+    patch: FluxEventDispatchPatch<T>,
 ) {
     let set = fPatches.get(type)
     if (!set) fPatches.set(type, (set = new Set<FluxEventDispatchPatch>()))

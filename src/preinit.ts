@@ -1,3 +1,4 @@
+import '@revenge-mod/modules/metro/patches'
 import '@revenge-mod/utils/patches/proxy'
 
 import {
@@ -22,10 +23,6 @@ onModuleFirstRequired(IndexModuleId, function onIndexRequired() {
         require('@revenge-mod/assets/preinit')
         require('@revenge-mod/discord/preinit')
 
-        // Run all preinit plugins
-        require('~/plugins/preinit')
-        require('@revenge-mod/plugins/preinit')
-
         onModuleInitialized(IndexModuleId, function onIndexInitialized() {
             if (__DEV__)
                 nativeLoggingHook(`\u001b[31m--- INIT STAGE ---\u001b[0m`, 1)
@@ -36,6 +33,10 @@ onModuleFirstRequired(IndexModuleId, function onIndexRequired() {
                 onError(e)
             }
         })
+
+        // Run all preinit plugins
+        require('~/plugins/preinit')
+        require('@revenge-mod/plugins/preinit')
     } catch (e) {
         onError(e)
     }

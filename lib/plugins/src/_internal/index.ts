@@ -515,8 +515,8 @@ export async function stopPlugin(plugin: AnyPlugin) {
         // Reset state
         plugin.api = undefined
         meta.apiLevel = PluginApiLevel.None
-        meta.promises = []
-        meta.cleanups = []
+        meta.promises.length = 0
+        meta.cleanups.length = 0
         plugin.status = 0
 
         pEmitter.emit('stopped', plugin)

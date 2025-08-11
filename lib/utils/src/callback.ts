@@ -22,7 +22,10 @@ const now = (cb: () => any) => {
  */
 export const asap = (cb: (...args: any[]) => any) => {
     // @ts-expect-error
-    ;(HermesInternal.enqueueJob ?? setImmediate ?? now)(cb)
+    ;(HermesInternal.useEngineQueue()
+        ? // @ts-expect-error
+          HermesInternal.enqueueJob
+        : (globalThis.setImmediate ?? globalThis.setTimeout ?? now))(cb, 0)
 }
 
 export const noop = () => {}

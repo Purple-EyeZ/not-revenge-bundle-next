@@ -3,22 +3,22 @@
   "version": "0.1.0",
   "module": "src/index.ts",
   "devDependencies": {
-    "@biomejs/biome": "^2.1.3",
+    "@biomejs/biome": "^2.1.4",
     "@parcel/watcher": "^2.5.1",
     "@react-native-clipboard/clipboard": "^1.16.3",
-    "@types/bun": "^1.2.19",
-    "rolldown-plugin-dts": "^0.15.4"
+    "@types/bun": "^1.2.20",
+    "rolldown-plugin-dts": "^0.15.6"
   },
   "peerDependencies": {
-    "@react-navigation/core": "^7.10.1",
-    "@react-navigation/native": "^7.1.11",
-    "@react-navigation/stack": "^7.3.4",
+    "@react-navigation/core": "^7.12.4",
+    "@react-navigation/native": "^7.1.17",
+    "@react-navigation/stack": "^7.4.5",
     "@shopify/flash-list": "1.7.2",
-    "@types/react": "^19.1.8",
+    "@types/react": "^19.1.9",
     "buffer": "^6.0.3",
-    "react": "^19.1.0",
+    "react": "^19.1.1",
     "react-native": "0.78.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   },
   "private": true,
   "scripts": {
@@ -38,9 +38,9 @@
   ],
   "dependencies": {
     "@swc/core": "^1.13.3",
-    "chalk": "^5.4.1",
+    "chalk": "^5.5.0",
     "react-native-click-outside": "^0.1.1",
-    "rolldown": "1.0.0-beta.30"
+    "rolldown": "1.0.0-beta.31"
   },
   "overrides": {
     "@react-native/community-cli-plugin": "npm:dry-uninstall",

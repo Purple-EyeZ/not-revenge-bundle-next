@@ -3,7 +3,6 @@
 import { FileModule } from '@revenge-mod/discord/native'
 import { getErrorStack } from '@revenge-mod/utils/error'
 import { mergeDeep } from '@revenge-mod/utils/object'
-import { instanceToSubscriptions } from './_internal'
 import type { AnyObject, DeepPartial } from '@revenge-mod/utils/types'
 
 export type StorageSubscription<T extends AnyObject = AnyObject> = (
@@ -22,13 +21,17 @@ export function Storage<T extends AnyObject>(
     const fullPath = `${dirPath}/${path}`
 
     const subscriptions = new Set<StorageSubscription<T>>()
-    instanceToSubscriptions.set(this, subscriptions)
 
     this.loaded = false
     this.cache = options?.default
 
     this.exists = () => FileModule.fileExists(fullPath)
     this.delete = () => FileModule.removeFile(directory, path)
+
+    this.subscribe = callback => {
+        subscriptions.add(callback)
+        return () => subscriptions.delete(callback)
+    }
 
     this.get = async function () {
         if (!(await this.exists())) {
@@ -73,7 +76,7 @@ export function Storage<T extends AnyObject>(
 }
 
 // React is only initialized right before the init stage, so this is a dummy method
-// See init.ts for the actual implementation
+// See define-storage-use.ts in api.storage plugin for the actual implementation
 Storage.prototype.use = () => {
     throw new Error('Storage#use can only be called after the init stage!')
 }
@@ -153,8 +156,13 @@ export interface Storage<T extends AnyObject> {
      *  // ...
      * }
      */
-
     use(filter?: UseStorageFilter<T>): T | undefined
+    /**
+     * Subscribe to storage updates. The callback will be called with what was called in `Storage#set`.
+     * @param callback The callback to call when the storage is updated.
+     * @returns A function to unsubscribe.
+     */
+    subscribe(callback: StorageSubscription<T>): () => void
     /**
      * Get the storage.
      */

@@ -1,6 +1,6 @@
 // Initialize start libraries
-require('@revenge-mod/discord/start')
+import '@revenge-mod/discord/start'
 
 // Run all start plugins
-require('~/plugins/start')
-require('@revenge-mod/plugins/start')
+import '~/plugins/start'
+import '@revenge-mod/plugins/start'

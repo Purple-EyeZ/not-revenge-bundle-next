@@ -8,9 +8,6 @@ Object.defineProperty(globalThis, '__c', {
         delete globalThis.__c
         globalThis.__c = clear
 
-        // Patch Metro's core functions
-        require('@revenge-mod/modules/metro/patches')
-
         require('./preinit')
     },
 })

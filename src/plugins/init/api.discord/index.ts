@@ -26,33 +26,39 @@ registerPlugin(
                 )
             })
 
-            defineLazyProperties((unscoped.discord = {} as PluginApiDiscord), {
-                actions: () => {
-                    return require('@revenge-mod/discord/actions')
-                },
-                common: () => {
-                    return require('@revenge-mod/discord/common')
-                },
-                design: () => {
-                    return require('@revenge-mod/discord/design')
-                },
-                flux: () => {
-                    return require('@revenge-mod/discord/flux')
-                },
-                native: () => {
-                    return require('@revenge-mod/discord/native')
-                },
-                modules: () =>
-                    defineLazyProperties({} as PluginApiDiscord.Modules, {
-                        mainTabsV2: () => {
-                            return require('@revenge-mod/discord/modules/main_tabs_v2')
+            defineLazyProperties(
+                (unscoped.discord = {
+                    modules: defineLazyProperties(
+                        {} as PluginApiDiscord.Modules,
+                        {
+                            mainTabsV2: () => {
+                                return require('@revenge-mod/discord/modules/main_tabs_v2')
+                            },
+                            settings: () => ({
+                                ...require('@revenge-mod/discord/modules/settings'),
+                                ...require('@revenge-mod/discord/modules/settings/renderer'),
+                            }),
                         },
-                        settings: () => ({
-                            ...require('@revenge-mod/discord/modules/settings'),
-                            renderer: require('@revenge-mod/discord/modules/settings/renderer'),
-                        }),
-                    }),
-            })
+                    ),
+                } as PluginApiDiscord),
+                {
+                    actions: () => {
+                        return require('@revenge-mod/discord/actions')
+                    },
+                    common: () => {
+                        return require('@revenge-mod/discord/common')
+                    },
+                    flux: () => {
+                        return require('@revenge-mod/discord/flux')
+                    },
+                    design: () => {
+                        return require('@revenge-mod/discord/design')
+                    },
+                    native: () => {
+                        return require('@revenge-mod/discord/native')
+                    },
+                },
+            )
         },
     },
     PluginFlags.Enabled,

@@ -1,5 +1,5 @@
 import { ToastActionCreators } from '@revenge-mod/discord/actions'
-import { getStore, Stores } from '@revenge-mod/discord/common/flux'
+import { getStore, Stores } from '@revenge-mod/discord/flux'
 import { byProps } from '@revenge-mod/modules/finders/filters'
 import { getModule } from '@revenge-mod/modules/finders/get'
 import { instead } from '@revenge-mod/patcher'
