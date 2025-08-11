@@ -191,6 +191,7 @@ function library<
 const Libraries = [
     library(assets, ['', 'types']),
     library(components, [
+        '',
         'FormSwitch',
         'Page',
         'SearchInput',

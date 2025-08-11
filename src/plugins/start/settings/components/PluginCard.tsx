@@ -79,7 +79,13 @@ export const PluginCard = memo(function PluginCard({
                         source={icon ? getAssetIdByName(icon) : PuzzlePieceIcon}
                         style={styles_.icon}
                     />
-                    <Text variant="heading-lg/semibold">{name}</Text>
+                    <Text
+                        variant="heading-lg/semibold"
+                        textBreakStrategy="balanced"
+                        style={styles.flex}
+                    >
+                        {name}
+                    </Text>
                 </Stack>
                 {actions}
             </Stack>
