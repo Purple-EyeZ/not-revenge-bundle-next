@@ -53,8 +53,7 @@ function useEnabledPluginCount() {
 
 const { AlertActionButton, AlertModal, Text } = Design
 
-pEmitter.on('started', showReloadRequiredAlertIfNeeded)
-pEmitter.on('stopped', showReloadRequiredAlertIfNeeded)
+pEmitter.on('flagUpdate', showReloadRequiredAlertIfNeeded)
 
 function showReloadRequiredAlertIfNeeded(plugin: AnyPlugin) {
     if (plugin.flags & PluginFlags.ReloadRequired) {
@@ -77,8 +76,9 @@ function PluginReloadRequiredAlert({ plugins }: { plugins: AnyPlugin[] }) {
                 <Text variant="text-md/medium" color="header-secondary">
                     The following plugins require a reload to apply changes:
                     {'\n'}
-                    {plugins.map(plugin => (
+                    {plugins.map((plugin, index) => (
                         <>
+                            {index ? ' ,' : null}
                             <Text
                                 key={plugin.manifest.id}
                                 variant="text-md/bold"
@@ -86,7 +86,6 @@ function PluginReloadRequiredAlert({ plugins }: { plugins: AnyPlugin[] }) {
                             >
                                 {plugin.manifest.name}
                             </Text>
-                            {', '}
                         </>
                     ))}
                 </Text>

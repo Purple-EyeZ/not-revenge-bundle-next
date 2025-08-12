@@ -1,7 +1,7 @@
 import { AlertActionCreators } from '@revenge-mod/discord/actions'
 import { Design } from '@revenge-mod/discord/design'
+import { getModule } from '@revenge-mod/modules/finders'
 import { byProps } from '@revenge-mod/modules/finders/filters'
-import { getModule } from '@revenge-mod/modules/finders/get'
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'
 import { afterJSX, beforeJSX } from '@revenge-mod/react/jsx-runtime'

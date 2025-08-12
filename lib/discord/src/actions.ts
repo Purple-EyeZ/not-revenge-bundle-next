@@ -1,3 +1,4 @@
+import { lookupModule, lookupModules } from '@revenge-mod/modules/finders'
 import {
     byDependencies,
     byProps,
@@ -5,10 +6,6 @@ import {
     preferExports,
     withoutProps,
 } from '@revenge-mod/modules/finders/filters'
-import {
-    lookupModule,
-    lookupModules,
-} from '@revenge-mod/modules/finders/lookup'
 import {
     ReactJSXRuntimeModuleId,
     ReactModuleId,

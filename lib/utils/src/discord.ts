@@ -1,10 +1,10 @@
 import { getAssetByName } from '@revenge-mod/assets'
 import { TokensModuleId } from '@revenge-mod/discord/common'
+import { lookupModule } from '@revenge-mod/modules/finders'
 import {
     byDependencies,
     createFilterGenerator,
 } from '@revenge-mod/modules/finders/filters'
-import { lookupModule } from '@revenge-mod/modules/finders/lookup'
 import {
     ReactJSXRuntimeModuleId,
     ReactModuleId,

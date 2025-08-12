@@ -1,5 +1,5 @@
+import { waitForModules } from '@revenge-mod/modules/finders'
 import { byName } from '@revenge-mod/modules/finders/filters'
-import { waitForModules } from '@revenge-mod/modules/finders/wait'
 import { instead } from '@revenge-mod/patcher'
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'

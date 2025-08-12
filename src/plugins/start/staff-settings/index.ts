@@ -1,7 +1,7 @@
 import { ToastActionCreators } from '@revenge-mod/discord/actions'
 import { getStore, Stores } from '@revenge-mod/discord/flux'
+import { getModule } from '@revenge-mod/modules/finders'
 import { byProps } from '@revenge-mod/modules/finders/filters'
-import { getModule } from '@revenge-mod/modules/finders/get'
 import { instead } from '@revenge-mod/patcher'
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'

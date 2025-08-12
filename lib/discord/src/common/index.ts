@@ -1,10 +1,10 @@
+import { lookupModule } from '@revenge-mod/modules/finders'
 import {
     byDependencies,
     byName,
     byProps,
     preferExports,
 } from '@revenge-mod/modules/finders/filters'
-import { lookupModule } from '@revenge-mod/modules/finders/lookup'
 import { proxify } from '@revenge-mod/utils/proxy'
 import type { Metro } from '@revenge-mod/modules/types'
 import type { DiscordModules } from '../types'

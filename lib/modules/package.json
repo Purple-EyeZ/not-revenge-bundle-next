@@ -6,14 +6,8 @@
     "./finders/filters": {
       "default": "./src/finders/filters.ts"
     },
-    "./finders/get": {
-      "default": "./src/finders/get.ts"
-    },
-    "./finders/lookup": {
-      "default": "./src/finders/lookup.ts"
-    },
-    "./finders/wait": {
-      "default": "./src/finders/wait.ts"
+    "./finders": {
+      "default": "./src/finders/index.ts"
     },
     "./metro/subscriptions": {
       "default": "./src/metro/subscriptions/index.ts"

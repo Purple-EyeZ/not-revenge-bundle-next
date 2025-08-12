@@ -64,6 +64,7 @@ export interface InternalPluginMeta {
     dependents: AnyPlugin[]
     dependencies?: AnyPlugin[]
     options: PluginOptions<any>
+    flags: number
 }
 
 export const pUnscopedApi = uapi
@@ -76,6 +77,7 @@ export const pEmitter = new TypedEventEmitter<{
     started: [AnyPlugin]
     stopped: [AnyPlugin]
     errored: [AnyPlugin, unknown]
+    flagUpdate: [AnyPlugin]
 }>()
 
 export const pList = new Map<PluginManifest['id'], AnyPlugin>()
@@ -94,7 +96,7 @@ export function registerPlugin<O extends PluginApiExtensionsOptions>(
     if (pList.has(manifest.id))
         throw new Error(`Plugin with ID "${manifest.id}" already registered`)
 
-    const plugin: AnyPlugin = {
+    const plugin = {
         errors: [],
         manifest,
         lifecycles: {
@@ -105,10 +107,16 @@ export function registerPlugin<O extends PluginApiExtensionsOptions>(
         },
         SettingsComponent: options.SettingsComponent,
         status: 0,
-        flags,
         disable: () => disablePlugin(plugin),
         stop: () => stopPlugin(plugin),
         api: undefined,
+        set flags(flags: number) {
+            meta.flags = flags
+            pEmitter.emit('flagUpdate', this)
+        },
+        get flags() {
+            return meta.flags
+        },
     }
 
     const meta: InternalPluginMeta = {
@@ -119,6 +127,7 @@ export function registerPlugin<O extends PluginApiExtensionsOptions>(
         dependents: [],
         handleError: e => handlePluginError(e, plugin),
         options,
+        flags,
     }
 
     pMetadata.set(plugin, meta)
@@ -320,19 +329,23 @@ export async function runPluginLate(plugin: AnyPlugin) {
     if (plugin.status & Status.Started)
         throw new Error(`Plugin "${plugin.manifest.id}" is already started`)
 
-    plugin.flags |= Flag.EnabledLate
-
     // Reset previous computations
     pListOrdered.length = 0
     pPending.add(plugin)
     computePendingNodes()
 
     await Promise.all(
-        pListOrdered.map(async function runLate(plugin) {
-            await preInitPlugin(plugin)
-            await initPlugin(plugin)
-            await startPlugin(plugin)
-        }),
+        // If the plugin is stopped, we should initialize it
+        pListOrdered
+            .filter(plugin => !plugin.status)
+            .map(async function runLate(plugin) {
+                plugin.flags |= Flag.EnabledLate
+
+                // Prepare the plugin API
+                await preInitPlugin(plugin)
+                await initPlugin(plugin)
+                await startPlugin(plugin)
+            }),
     )
 }
 

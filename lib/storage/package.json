@@ -6,6 +6,9 @@
     ".": {
       "default": "./src/index.ts"
     },
+    "./init": {
+      "default": "./src/init.ts"
+    },
     "./types": {
       "types": "./src/types.ts"
     }

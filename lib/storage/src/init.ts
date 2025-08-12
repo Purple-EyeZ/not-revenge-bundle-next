@@ -4,8 +4,7 @@ import { useEffect } from 'react'
 import type { StorageSubscription } from '@revenge-mod/storage'
 
 // Actual implementation of Storage#use
-const SP: Storage<any> = Storage.prototype
-SP.use = function (filter) {
+;(Storage.prototype as Storage<any>).use = function (filter) {
     if (!this.cache) this.get()
 
     const reRender = useReRender()

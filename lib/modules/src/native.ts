@@ -10,11 +10,11 @@ const turboModuleProxy = globalThis.__turboModuleProxy
  * @param name The name of the native module to get.
  */
 export function getNativeModule<T>(name: string): T | null {
-    const module = turboModuleProxy
-        ? // Non-bridgeless with TurboModules
-          turboModuleProxy(name)
-        : // Bridgeless & legacy modules
-          nativeModuleProxy[name]
+    const module =
+        // Non-bridgeless with TurboModules
+        turboModuleProxy?.(name) ??
+        // Bridgeless & legacy modules
+        nativeModuleProxy[name]
 
     if (module) return module as T
 

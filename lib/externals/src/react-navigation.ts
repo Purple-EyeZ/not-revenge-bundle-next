@@ -1,10 +1,10 @@
+import { lookupModule } from '@revenge-mod/modules/finders'
 import {
     byDependencies,
     byName,
     byProps,
     preferExports,
 } from '@revenge-mod/modules/finders/filters'
-import { lookupModule } from '@revenge-mod/modules/finders/lookup'
 import { ReactJSXRuntimeModuleId, ReactModuleId } from '@revenge-mod/react'
 import { proxify } from '@revenge-mod/utils/proxy'
 

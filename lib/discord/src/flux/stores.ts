@@ -1,16 +1,16 @@
 import {
+    lookupModule,
+    lookupModules,
+    waitForModules,
+} from '@revenge-mod/modules/finders'
+import {
     byName,
     createFilterGenerator,
 } from '@revenge-mod/modules/finders/filters'
-import {
-    lookupModule,
-    lookupModules,
-} from '@revenge-mod/modules/finders/lookup'
-import { waitForModules } from '@revenge-mod/modules/finders/wait'
 import { getModuleDependencies } from '@revenge-mod/modules/metro/utils'
 import { asap, noop } from '@revenge-mod/utils/callback'
-import { cached, cacheFilterResultForId } from '../../../modules/src/caches'
-import { FilterResultFlags } from '../../../modules/src/finders/_internal'
+import { cached, cacheFilterResultForId } from '#modules/src/caches'
+import { FilterResultFlags } from '#modules/src/finders/_internal'
 import type {
     Filter,
     FilterGenerator,

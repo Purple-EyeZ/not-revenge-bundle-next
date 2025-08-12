@@ -28,8 +28,6 @@ registerPlugin(
             })
         },
         init({ decorate }) {
-            require('./define-storage-use')
-
             decorate(plugin => {
                 defineLazyProperty(plugin.api, 'storage', () =>
                     getStorage(

@@ -76,7 +76,7 @@ export function Storage<T extends AnyObject>(
 }
 
 // React is only initialized right before the init stage, so this is a dummy method
-// See define-storage-use.ts in api.storage plugin for the actual implementation
+// See init.ts in api.storage plugin for the actual implementation
 Storage.prototype.use = () => {
     throw new Error('Storage#use can only be called after the init stage!')
 }

@@ -1,13 +1,13 @@
 import {
+    lookupModule,
+    lookupModules,
+    waitForModules,
+} from '@revenge-mod/modules/finders'
+import {
     byDependencies,
     byName,
     byProps,
 } from '@revenge-mod/modules/finders/filters'
-import {
-    lookupModule,
-    lookupModules,
-} from '@revenge-mod/modules/finders/lookup'
-import { waitForModules } from '@revenge-mod/modules/finders/wait'
 import {
     mInitializingId,
     mUninitialized,

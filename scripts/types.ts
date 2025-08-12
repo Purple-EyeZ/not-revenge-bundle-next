@@ -219,10 +219,8 @@ const Libraries = [
         'types',
     ]),
     library(modules, [
+        'finders',
         'finders/filters',
-        ['finders/get', 'finders'],
-        ['finders/lookup', 'finders'],
-        ['finders/wait', 'finders'],
         ['metro/subscriptions', 'metro'],
         ['metro/utils', 'metro'],
         'native',
