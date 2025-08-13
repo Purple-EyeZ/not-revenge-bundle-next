@@ -6,7 +6,6 @@ import {
     onModuleFinishedImporting,
     onModuleInitialized,
 } from '../metro/subscriptions'
-import { getInitializedModuleExports } from '../metro/utils'
 import {
     exportsFromFilterResultFlag,
     FilterResultFlagToHumanReadable,
@@ -208,9 +207,8 @@ export function waitForModuleByImportedPath<T = any>(
         if (path === cmpPath) {
             unsub()
             // Module is not fully initialized yet, so we need to wait for it
-            onModuleInitialized(id, () => {
-                if (!options?.all || mInitialized.has(id))
-                    callback(getInitializedModuleExports(id), id)
+            onModuleInitialized(id, (id, exports) => {
+                if (!options?.all || mInitialized.has(id)) callback(exports, id)
             })
         }
     })
