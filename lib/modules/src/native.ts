@@ -29,14 +29,13 @@ const BridgePromise = getNativeModule<{
     readAsDataURL(map: object): Promise<any>
 }>('FileReaderModule')!
 
-/**
- * HashMap conversion in native would make you lose the order of the arguments once the keys get more complicated than a single character
- */
-function guardMaxArgs(args: any[]) {
-    if (args.length > 9)
-        throw new Error(
-            'Passing more than 9 arguments to a native method is not supported.',
-        )
+function makePayload(name: string, args: any[]): object {
+    return {
+        revenge: {
+            method: name,
+            args: args,
+        },
+    }
 }
 
 /**
@@ -47,12 +46,7 @@ function guardMaxArgs(args: any[]) {
  * @returns A promise that resolves with the result of the native method call.
  */
 export async function callMethod<T>(name: string, args: any[]): Promise<T> {
-    guardMaxArgs(args)
-
-    const result = await BridgePromise.readAsDataURL({
-        revenge: name,
-        ...args,
-    })
+    const result = await BridgePromise.readAsDataURL(makePayload(name, args))
 
     if ('error' in result)
         throw new Error(`Call failed: ${result.error as string}`)
@@ -73,10 +67,8 @@ export async function callMethod<T>(name: string, args: any[]): Promise<T> {
  * @returns The result of the native method call.
  */
 export function callMethodSync<T>(name: string, args: any[]): T {
-    guardMaxArgs(args)
-
     try {
-        const result = Bridge.getBBox(0, { ...args, revenge: name })
+        const result = Bridge.getBBox(0, makePayload(name, args))
 
         if ('error' in result) throw result.error
         if ('result' in result) return result.result as T
