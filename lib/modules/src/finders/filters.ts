@@ -23,9 +23,7 @@ export interface Filter<
     key: string
 }
 
-// @ts-expect-error: This works perfectly fine!
-export interface FilterGenerator<G extends (...args: any[]) => Filter>
-    extends G {
+export type FilterGenerator<G extends (...args: any[]) => Filter> = G & {
     keyFor: (args: Parameters<G>) => string
 }
 
