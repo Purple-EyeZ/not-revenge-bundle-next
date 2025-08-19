@@ -1,19 +1,17 @@
-import { after, before } from '@revenge-mod/patcher'
+import { instead } from '@revenge-mod/patcher'
 import { ReactNative } from '..'
 import { sAfterRunApplication, sBeforeRunApplication } from './_internal'
 
-before(ReactNative.AppRegistry, 'runApplication', args => {
+instead(ReactNative.AppRegistry, 'runApplication', function (args, orig) {
     for (const cb of sBeforeRunApplication)
         try {
             cb()
         } catch {}
-    return args
-})
 
-after(ReactNative.AppRegistry, 'runApplication', res => {
+    Reflect.apply(orig, this, args)
+
     for (const cb of sAfterRunApplication)
         try {
             cb()
         } catch {}
-    return res
 })

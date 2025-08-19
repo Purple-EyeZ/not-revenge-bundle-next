@@ -1,5 +1,3 @@
-// TODO(storage): Implement using NativeModules interop instead
-
 import { FileModule } from '@revenge-mod/discord/native'
 import { getErrorStack } from '@revenge-mod/utils/error'
 import { mergeDeep } from '@revenge-mod/utils/object'
@@ -73,6 +71,8 @@ export function Storage<T extends AnyObject>(
             )
         }
     }
+
+    if (options?.load) this.get()
 }
 
 // React is only initialized right before the init stage, so this is a dummy method
@@ -93,8 +93,6 @@ export function getStorage<T extends AnyObject = AnyObject>(
 ): Storage<T> {
     const storage: Storage<T> = Object.create(Storage.prototype)
     Storage.call(storage, path, options)
-
-    if (options?.load) storage.get()
 
     return storage
 }

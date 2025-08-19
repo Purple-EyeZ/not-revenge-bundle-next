@@ -43,7 +43,7 @@ export namespace Metro {
          * Whether factory has been successfully called
          * */
         isInitialized: boolean
-        publicModule: ModuleExports
+        publicModule: Module
     }
 
     export type Module = {

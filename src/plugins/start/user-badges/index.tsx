@@ -76,7 +76,7 @@ registerPlugin(
                                 !props.badges.length
                             )
                                 // @ts-expect-error: This will never be rendered
-                                props.badges.unshift({ id: DUMMY_SYMBOL })
+                                props.badges.push({ id: DUMMY_SYMBOL })
 
                             return args
                         }),
@@ -138,7 +138,7 @@ function patchProfileBadgeRows(
             }
 
             // Remove dummy badge if it exists
-            if (props.id === DUMMY_SYMBOL) container.props.children.shift()
+            if (props.id === DUMMY_SYMBOL) container.props.children.pop()
         }
 
         return fiber

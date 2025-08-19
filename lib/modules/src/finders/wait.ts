@@ -113,7 +113,9 @@ export function waitForModules(
             ) => {
                 const flag = reg[id]
 
-                DEBUG_logWaitMatched(filter.key, id, flag, true)
+                if (__BUILD_FLAG_DEBUG_MODULE_WAITS__)
+                    DEBUG_logWaitMatched(filter.key, id, flag, true)
+
                 callback(
                     exportsFromFilterResultFlag(flag, exports, options),
                     id,
