@@ -20,10 +20,10 @@ const { AlertModal, AlertActionButton, TableRow, TableRowGroup, Text } = Design
 
 const Displayable = new Set(['png', 'jpg', 'svg', 'webp'])
 const UndisplayableFallback = {
-    jsona: 'ic_file_text',
-    lottie: 'ic_image',
+    jsona: 'PaperIcon',
+    lottie: 'ImageFileIcon',
     webm: 'CirclePlayIcon-primary',
-    ttf: 'ic_add_text',
+    ttf: 'LanguageIcon',
     default: 'UnknownGameIcon',
 }
 

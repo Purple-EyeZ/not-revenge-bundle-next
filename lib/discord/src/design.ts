@@ -4,6 +4,7 @@ import {
     byProps,
     bySingleProp,
     preferExports,
+    some,
 } from '@revenge-mod/modules/finders/filters'
 import {
     ReactJSXRuntimeModuleId,
@@ -23,14 +24,31 @@ export let Design: Design = proxify(
         const [module] = lookupModule(
             preferExports(
                 byProps<Design>('TableRow', 'Button'),
-                byDependencies(
-                    loose([
-                        relative(1),
-                        undefined,
-                        relative(2),
-                        relative(3),
-                        2,
-                    ]),
+                some(
+                    byDependencies(
+                        loose([
+                            undefined,
+                            undefined,
+                            undefined,
+                            relative.withDependencies([2], 1),
+                            2,
+                            undefined, // 3009
+                            undefined, // 3010
+                            undefined, // 3011
+                            undefined, // 3012
+                            relative.withDependencies([2], 2),
+                        ]),
+                    ),
+                    // TODO(PalmDevs): Remove once stable channel is > 295203 (for 295203 and below)
+                    byDependencies(
+                        loose([
+                            relative(1),
+                            undefined,
+                            relative(2),
+                            relative(3),
+                            2,
+                        ]),
+                    ),
                 ),
             ),
             {

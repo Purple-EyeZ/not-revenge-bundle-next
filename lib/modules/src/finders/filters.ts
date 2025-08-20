@@ -41,7 +41,7 @@ export type FilterGenerator<G extends (...args: any[]) => Filter> = G & {
  *     // filter logic
  *     return true
  *   },
- *   ([arg1, arg2]) => `revenge.custom(${arg1}, ${arg2})`
+ *   ([arg1, arg2]) => `custom(${arg1}, ${arg2})`
  * )
  * ```
  *
@@ -382,17 +382,23 @@ function depGenFilterKey(deps: ComparableDependencyMap): string {
         if (dep === undefined) key += ','
         else if (Array.isArray(dep)) {
             if (dep.l) key += '#'
+            // relative.withDependencies?
+            if (dep.r) key += depGenRelativeKeyPart(dep.r)
+
             key += `[${depGenFilterKey(dep)}],`
         } else {
-            if (dep & RelativeBit) {
-                const magnitude = depGetRelMagnitude(dep)
-                const prefix = dep & RelativeRootBit ? '~' : '^'
-                key += `${prefix}${magnitude},`
-            } else key += `${dep},`
+            if (dep & RelativeBit) key += depGenRelativeKeyPart(dep)
+            else key += `${dep},`
         }
     }
 
     return key.substring(0, key.length - 1)
+}
+
+function depGenRelativeKeyPart(dep: number) {
+    const magnitude = depGetRelMagnitude(dep)
+    const prefix = dep & RelativeRootBit ? '~' : '^'
+    return `${prefix}${magnitude},`
 }
 
 export type Every = FilterGenerator<{
