@@ -72,9 +72,14 @@ export namespace Metro {
 }
 
 export namespace RevengeMetro {
+    export type Module = {
+        id: Metro.ModuleID
+        exports: Metro.ModuleExports
+    }
+
     export type ModuleDefinition<Initialized = boolean> = {
         flags: number
-        module: Metro.Module
+        module?: Module
         factory: If<Initialized, undefined, () => void>
         importedDefault?: Metro.ModuleExports
         importedAll?: Metro.ModuleExports

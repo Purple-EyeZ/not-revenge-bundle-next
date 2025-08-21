@@ -55,6 +55,9 @@ const unsubAR = waitForModules(
             // TODO(lib/assets/caches): Ideally we should not wait for the cache promise here, see the promise impl for more info.
             cached.then(cached => {
                 if (!cached) {
+                    // Resolve reference once and keep in closure
+                    const metroRequire = __r
+
                     // More fragile way, but also more performant:
                     // There is exactly one asset before the reexported asset registry :/
                     const firstAssetModuleId = id - 1
@@ -62,7 +65,8 @@ const unsubAR = waitForModules(
                         if (mId < firstAssetModuleId) continue
 
                         const deps = getModuleDependencies(mId)!
-                        if (deps.length === 1 && deps[0] === id) __r(mId)
+                        if (deps.length === 1 && deps[0] === id)
+                            metroRequire(mId)
                     }
                 }
             })

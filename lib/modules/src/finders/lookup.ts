@@ -1,6 +1,7 @@
 import { getCurrentStack } from '@revenge-mod/utils/error'
 import { proxify } from '@revenge-mod/utils/proxy'
 import { cacheFilterNotFound, getCachedFilterRegistry } from '../caches'
+import { metroRequire } from '../metro/custom'
 import {
     mImportedPaths,
     mInitialized,
@@ -120,7 +121,7 @@ type LookupFilterResult<
     ? MaybeDefaultExportMatched<FilterResult<F>>
     : FilterResult<F>
 
-const NotFoundResult: [] = []
+const NotFoundResult: readonly [] = Object.freeze([])
 
 type LookupNotFoundResult = typeof NotFoundResult
 
@@ -170,7 +171,8 @@ export function* lookupModules(filter: Filter, options?: LookupModulesOptions) {
         if (reg) {
             cached = new Set()
 
-            for (const [sId, flag] of Object.entries(reg)) {
+            for (const sId of Object.keys(reg)) {
+                const flag = reg[sId as unknown as keyof typeof reg]
                 const id = Number(sId)
                 let exports: Metro.ModuleExports | undefined
 
@@ -178,7 +180,7 @@ export function* lookupModules(filter: Filter, options?: LookupModulesOptions) {
                     exports = getInitializedModuleExports(id)
                 else {
                     if (notInit) continue
-                    exports = __r(id)
+                    exports = metroRequire(id)
                 }
 
                 cached.add(id)
@@ -194,17 +196,30 @@ export function* lookupModules(filter: Filter, options?: LookupModulesOptions) {
     // Full lookup
     if (options?.all) {
         for (const id of mList.keys()) {
-            if (cached?.has(id)) continue
+            // biome-ignore lint/complexity/useOptionalChain: Hot path should be optimized
+            if (cached && cached.has(id)) continue
 
-            const exports = getInitializedModuleExports(id)
-            const flag = runFilter(filter, id, exports, options)
+            const flag = runFilter(
+                filter,
+                id,
+                getInitializedModuleExports(id),
+                options,
+            )
+
             if (flag) {
                 notFound = false
 
                 if (__BUILD_FLAG_DEBUG_MODULE_LOOKUPS__)
                     DEBUG_logLookupMatched(filter.key, flag, id)
 
-                yield [exportsFromFilterResultFlag(flag, exports, options), id]
+                yield [
+                    exportsFromFilterResultFlag(
+                        flag,
+                        getInitializedModuleExports(id),
+                        options,
+                    ),
+                    id,
+                ]
             }
         }
 
@@ -214,7 +229,8 @@ export function* lookupModules(filter: Filter, options?: LookupModulesOptions) {
     else {
         if (options?.initialized ?? true)
             for (const id of mInitialized) {
-                if (cached?.has(id)) continue
+                // biome-ignore lint/complexity/useOptionalChain: Hot path should be optimized
+                if (cached && cached.has(id)) continue
 
                 const exports = getInitializedModuleExports(id)
                 const flag = runFilter(filter, id, exports, options)
@@ -233,7 +249,8 @@ export function* lookupModules(filter: Filter, options?: LookupModulesOptions) {
 
         if (options?.uninitialized)
             for (const id of mUninitialized) {
-                if (cached?.has(id)) continue
+                // biome-ignore lint/complexity/useOptionalChain: Hot path should be optimized
+                if (cached && cached.has(id)) continue
 
                 const flag = runFilter(filter, id, undefined, options)
                 if (flag) {
@@ -296,15 +313,16 @@ export function lookupModule(filter: Filter, options?: LookupModulesOptions) {
         if (reg === null) return NotFoundResult
 
         if (reg)
-            for (const [sId, flag] of Object.entries(reg)) {
+            for (const sId of Object.keys(reg)) {
+                const flag = reg[sId as unknown as keyof typeof reg]
                 const id = Number(sId)
-                let exports: Metro.ModuleExports
+                let exports: Metro.ModuleExports | undefined
 
                 if (isModuleInitialized(id))
                     exports = getInitializedModuleExports(id)
                 else {
                     if (notInit) continue
-                    exports = __r(id)
+                    exports = metroRequire(id)
                 }
 
                 if (__BUILD_FLAG_DEBUG_MODULE_LOOKUPS__)
@@ -317,13 +335,25 @@ export function lookupModule(filter: Filter, options?: LookupModulesOptions) {
     // Full lookup
     if (options?.all) {
         for (const id of mList.keys()) {
-            const exports = getInitializedModuleExports(id)
-            const flag = runFilter(filter, id, exports, options)
+            const flag = runFilter(
+                filter,
+                id,
+                getInitializedModuleExports(id),
+                options,
+            )
+
             if (flag) {
                 if (__BUILD_FLAG_DEBUG_MODULE_LOOKUPS__)
                     DEBUG_logLookupMatched(filter.key, flag, id)
 
-                return [exportsFromFilterResultFlag(flag, exports, options), id]
+                return [
+                    exportsFromFilterResultFlag(
+                        flag,
+                        getInitializedModuleExports(id),
+                        options,
+                    ),
+                    id,
+                ]
             }
         }
 
@@ -390,11 +420,11 @@ export function lookupModule(filter: Filter, options?: LookupModulesOptions) {
  */
 export function lookupModuleByImportedPath<T = any>(
     path: string,
-): [exports: T, id: Metro.ModuleID] | [] {
+): [exports: T, id: Metro.ModuleID] | LookupNotFoundResult {
     const id = mImportedPaths.get(path)
-    if (id == null) return NotFoundResult
-
-    return [getInitializedModuleExports(id), id]
+    return id === undefined
+        ? NotFoundResult
+        : [getInitializedModuleExports(id), id]
 }
 
 const __DEBUG_TRACER_IGNORE_LIST__ = __BUILD_FLAG_DEBUG_MODULE_LOOKUPS__

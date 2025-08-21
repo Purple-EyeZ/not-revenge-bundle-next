@@ -19,13 +19,17 @@ export const global = globalThis
 
 export const metroRequire = (moduleId => {
     const mod = mList.get(moduleId)!
-    const { flags, module: moduleObject } = mod
+    let { flags, module: moduleObject } = mod
 
-    if (flags & InitializedOrInitializing) return moduleObject.exports
+    if (flags & InitializedOrInitializing) return moduleObject!.exports
     if (flags & HasError) throw mod.error
 
     mod.flags |= Initializing
-    moduleObject.id = moduleId
+
+    moduleObject = mod.module = {
+        exports: {},
+        id: moduleId,
+    }
 
     try {
         const { factory } = mod
@@ -39,7 +43,6 @@ export const metroRequire = (moduleId => {
     } catch (e) {
         mod.flags = (flags & NotInitializedOrInitializingMask) | HasError
         mod.error = e
-        // @ts-expect-error: We never access this key again
         mod.module = undefined
 
         // @ts-expect-error: Not documented, but used by React Native

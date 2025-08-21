@@ -1,5 +1,6 @@
 import { getCurrentStack } from '@revenge-mod/utils/error'
 import { cacheFilterResultForId } from '../caches'
+import { metroRequire } from '../metro/custom'
 import { mInitialized } from '../metro/patches'
 import { isModuleExportBad } from '../metro/utils'
 import type { If } from '@revenge-mod/utils/types'
@@ -90,7 +91,7 @@ export function runFilter(
     if (exports === undefined) {
         if ((filter as Filter<any, false>)(id)) {
             if (options?.initialize ?? true) {
-                const module = __r(id)
+                const module = metroRequire(id)
                 // Check if the required module is not blacklisted
                 if (mInitialized.has(id)) {
                     if (__BUILD_FLAG_DEBUG_MODULE_LOOKUPS__) {

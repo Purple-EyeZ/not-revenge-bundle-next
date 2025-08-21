@@ -88,8 +88,8 @@ export function getModule(
     if (max === 1) {
         const [exports, id] = lookupModule(filter, options!)
         if (id !== undefined) {
-            // Run callback at the end of the event loop
-            // This ensures that the noop is returned first
+            // Run callback at the end of the event loop. This ensures that the noop is returned first.
+            // Module is already initialized, there is likely no harm calling the callback late.
             asap(() => {
                 callback(exports, id)
             })
@@ -98,15 +98,13 @@ export function getModule(
     } else
         for (const [exports, id] of lookupModules(filter, options!)) {
             callback(exports, id)
-            max--
-            if (!max) return noop
+            if (!--max) return noop
         }
 
     const unsub = waitForModules(
         filter,
         (exports, id) => {
-            max--
-            if (!max) unsub()
+            if (!--max) unsub()
             callback(exports, id)
         },
         options!,

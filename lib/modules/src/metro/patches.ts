@@ -36,18 +36,18 @@ const metroDefine = (
     mDeps.set(id, dependencyMap!)
     mUninitialized.add(id)
 
-    const moduleObject = { exports: {} }
-
-    mList.set(id, {
+    const def: RevengeMetro.ModuleDefinition = {
         flags: 0,
-        module: moduleObject,
+        module: undefined,
         factory: () => {
-            handleFactoryCall(factory, moduleObject)
+            handleFactoryCall(factory, def.module!)
         },
         importedDefault: undefined,
         importedAll: undefined,
         error: undefined,
-    })
+    }
+
+    mList.set(id, def)
 }
 
 /**

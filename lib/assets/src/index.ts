@@ -15,6 +15,9 @@ export {
     AssetsRegistryModuleId,
 } from './preinit'
 
+// Resolve reference once and keep in closure
+const metroRequire = __r
+
 // iOS cannot display SVGs
 let _preferredType: Asset['type'] = Platform.OS === 'ios' ? 'png' : 'svg'
 /**
@@ -47,7 +50,7 @@ export function* getCustomAssets(): Generator<CustomAsset> {
 export function* getPackagerAssets(): Generator<PackagerAsset> {
     for (const reg of Object.values(cache))
         for (const moduleId of Object.values(reg))
-            yield AssetsRegistry.getAssetByID(__r(moduleId))
+            yield AssetsRegistry.getAssetByID(metroRequire(moduleId))
 }
 
 /**
@@ -79,7 +82,9 @@ export function getAssetsByName(
 
     return Object.entries(reg).reduce(
         (acc, [type, mid]) => {
-            acc[type as Asset['type']] = AssetsRegistry.getAssetByID(__r(mid))!
+            acc[type as Asset['type']] = AssetsRegistry.getAssetByID(
+                metroRequire(mid),
+            )!
             return acc
         },
         {} as Record<Asset['type'], Asset>,
@@ -106,13 +111,13 @@ export function getAssetIdByName(
 
     if (type !== undefined) {
         const mid = reg[type]
-        return mid && __r(mid)
+        return mid && metroRequire(mid)
     }
 
     let mid = reg[_preferredType]
     mid ??= Object.values(reg)[0]
 
-    return mid && __r(mid)
+    return mid && metroRequire(mid)
 }
 
 /**
