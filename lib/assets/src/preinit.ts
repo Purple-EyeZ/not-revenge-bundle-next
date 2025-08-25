@@ -31,8 +31,8 @@ const byAssetSourceResolver = byDependencies([
     _createClassId,
     relative(1),
     relative(2),
-    undefined,
-    undefined,
+    null,
+    null,
 ])
 
 const cachedOnly = { cached: true }

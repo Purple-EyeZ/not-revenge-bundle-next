@@ -13,7 +13,7 @@ const { relative } = byDependencies
 export const [AppStartPerformance] = lookupModule(
     preferExports(
         byProps<DiscordModules.AppStartPerformance>('markAndLog'),
-        byDependencies([relative(-1), undefined, undefined, 2]),
+        byDependencies([relative(-1), null, null, 2]),
     ),
     {
         uninitialized: true,

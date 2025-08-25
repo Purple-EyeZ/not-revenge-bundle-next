@@ -1,3 +1,4 @@
+import { getCurrentStack } from '@revenge-mod/utils/error'
 import { mInitialized } from '../metro/patches'
 import { getModuleDependencies, isModuleInitialized } from '../metro/utils'
 import type { If, LogicalOr } from '@revenge-mod/utils/types'
@@ -201,7 +202,7 @@ export const byName = createFilterGenerator<Parameters<ByName>>(
 
 export interface ComparableDependencyMap
     extends Array<
-        Metro.ModuleID | number | undefined | ComparableDependencyMap
+        Metro.ModuleID | number | null | undefined | ComparableDependencyMap
     > {
     l?: boolean
     r?: number
@@ -214,10 +215,13 @@ type ByDependencies = FilterGenerator<
     relative: typeof relative
 }
 
+const __DEBUG_WARNED_BAD_BY_DEPENDENCIES_FILTERS__ =
+    new Set<ComparableDependencyMap>()
+
 /**
  * Filter modules by their dependency map.
  *
- * @param deps The dependency map to check for, can be a sparse array or have `undefined` to be any dependency ("dynamic"). **Order and size matters!**
+ * @param deps The dependency map to check for, can be a sparse array or have `null` to be any dependency ("dynamic"). **Order and size matters!**
  *
  * To do proper fingerprinting for modules:
  * @see {@link byDependencies.loose} to loosen the checks.
@@ -230,16 +234,16 @@ type ByDependencies = FilterGenerator<
  * // Logger's module ID is 5
  * // It has 3 dependencies [4, ?, 2]
  *
- * const [Logger] = lookupModule(byDependencies([4, undefined, 2]))
+ * const [Logger] = lookupModule(byDependencies([4, null, 2]))
  * // or
  * const [Logger] = lookupModule(byDependencies([4, , 2]))
  *
  * // Relative dependencies
- * const [Logger] = lookupModule(byDependencies([relative(-1), undefined, 2]))
+ * const [Logger] = lookupModule(byDependencies([relative(-1), null, 2]))
  *
  * // Nested dependencies
  * // The last dependency (module ID 2) would need to have zero dependencies:
- * const [Logger] = lookupModule(byDependencies([4, undefined, []]))
+ * const [Logger] = lookupModule(byDependencies([4, null, []]))
  *
  * // Loose dependencies
  * // Module having these dependencies: [4, ...], [4, ..., ...], [4, ..., ..., ...], etc. would match:
@@ -305,7 +309,7 @@ function relative(id: Metro.ModuleID, root?: boolean) {
  * // And module ID + 1 would have exactly two dependencies: [Any, 2]
  * byDependencies(
  *   relative.withDependencies(
- *     [undefined, 2],
+ *     [null, 2],
  *     1, // Always the next module to the one being compared
  *     true, // The module ID being compared matches the returning (root) module ID
  *   )
@@ -321,6 +325,25 @@ relative.withDependencies = (
     return deps
 }
 
+/**
+ * Warns the developer about a bad `byDependencies` filter using `undefined` in its comparisons.
+ *
+ * - `undefined` should only be used as a fallback to when a module ID can really not be found.
+ * - Use `null` instead to indicate a dynamic dependency.
+ */
+function DEBUG_warnBadByDependenciesFilter(
+    deps: ComparableDependencyMap,
+    index: number,
+) {
+    // already warned
+    if (__DEBUG_WARNED_BAD_BY_DEPENDENCIES_FILTERS__.has(deps)) return
+
+    nativeLoggingHook(
+        `\u001b[33mBad ${byDependencies.name} filter, undefined ID at index ${index} (if intentional, set to null): [${depGenFilterKey(deps)}]\n${getCurrentStack()}\u001b[0m`,
+        2,
+    )
+}
+
 function depCompare(
     a: Metro.ModuleID[],
     b: ComparableDependencyMap,
@@ -333,8 +356,12 @@ function depCompare(
 
     for (let i = 0; i < lenB; i++) {
         const compare = b[i]
+
+        if (__DEV__ && compare === undefined)
+            DEBUG_warnBadByDependenciesFilter(b, i)
+
         // Skip dynamic
-        if (compare === undefined) continue
+        if (compare == null) continue
 
         const id = a[i]
 
@@ -382,7 +409,7 @@ function depGenFilterKey(deps: ComparableDependencyMap): string {
     for (let i = 0; i < deps.length; i++) {
         const dep = deps[i]
 
-        if (dep === undefined) key += ','
+        if (dep == null) key += ','
         else if (typeof dep === 'object') {
             if (dep.l) key += '#'
             // relative.withDependencies?
@@ -436,7 +463,7 @@ export type Every = FilterGenerator<{
  * const [SomeModule] = lookupModule(every(
  *    byProps('x', 'name'),
  *    byName('SomeName'),
- *    byDependencies([1, 485, undefined, 2]),
+ *    byDependencies([1, 485, null, 2]),
  * ))
  * ```
  */
@@ -483,7 +510,7 @@ export type Some = FilterGenerator<{
  * const [SomeModule] = lookupModule(some(
  *   byProps('x', 'name'),
  *   byName('SomeName'),
- *   byDependencies([1, 485, undefined, 2]),
+ *   byDependencies([1, 485, null, 2]),
  * ))
  * ```
  */
@@ -519,10 +546,10 @@ export type ModuleStateAware = FilterGenerator<
  * @example
  * ```ts
  * // will filter byProps('x') for initialized modules
- * // and byDependencies([1, 485, undefined, 2]) for uninitialized modules
+ * // and byDependencies([1, 485, null, 2]) for uninitialized modules
  * const [SomeModule] = lookupModule(moduleStateAware(
  *   byProps('x'),
- *   byDependencies([1, 485, undefined, 2]),
+ *   byDependencies([1, 485, null, 2]),
  * ))
  * ```
  */
@@ -563,10 +590,10 @@ export type PreferExports = FilterGenerator<
  * @example
  * ```ts
  * // will filter byProps('x') for modules with proper exports
- * // and byDependencies([1, 485, undefined, 2]) for without proper exports (uninitialized or bad)
+ * // and byDependencies([1, 485, null, 2]) for without proper exports (uninitialized or bad)
  * const [SomeModule] = lookupModule(preferExports(
  *   byProps('x'),
- *   byDependencies([1, 485, undefined, 2]),
+ *   byDependencies([1, 485, null, 2]),
  * ))
  * ```
  */

@@ -51,7 +51,7 @@ export let Constants: DiscordModules.Constants = proxify(
                 // Every module has only one dependency, which is the import tracker
                 byDependencies(
                     loose([
-                        undefined,
+                        null,
                         relative.withDependencies(OnlyImportTrackerDep, 1),
                         relative.withDependencies(OnlyImportTrackerDep, 2),
                         relative.withDependencies(OnlyImportTrackerDep, 3),

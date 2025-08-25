@@ -27,27 +27,21 @@ export let Design: Design = proxify(
                 some(
                     byDependencies(
                         loose([
-                            undefined,
-                            undefined,
-                            undefined,
+                            null,
+                            null,
+                            null,
                             relative.withDependencies([2], 1),
                             2,
-                            undefined, // 3009
-                            undefined, // 3010
-                            undefined, // 3011
-                            undefined, // 3012
+                            null, // 3009
+                            null, // 3010
+                            null, // 3011
+                            null, // 3012
                             relative.withDependencies([2], 2),
                         ]),
                     ),
                     // TODO(PalmDevs): Remove once stable channel is > 295203 (for 295203 and below)
                     byDependencies(
-                        loose([
-                            relative(1),
-                            undefined,
-                            relative(2),
-                            relative(3),
-                            2,
-                        ]),
+                        loose([relative(1), null, relative(2), relative(3), 2]),
                     ),
                 ),
             ),
@@ -76,17 +70,17 @@ export let FormSwitch: DiscordModules.Components.FormSwitch = proxify(() => {
                 'FormSwitch',
             ),
             byDependencies([
-                [relative(1), relative(2), undefined, relative(3)],
+                [relative(1), relative(2), null, relative(3)],
                 ReactModuleId,
                 ReactNativeModuleId,
                 ReactJSXRuntimeModuleId,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 relative(1),
                 relative(2),
                 2,
