@@ -22,8 +22,8 @@ const IconComponentFilter = [
     ReactModuleId,
     ReactJSXRuntimeModuleId,
     TokensModuleId,
-    undefined,
-    undefined,
+    null,
+    null,
     2,
 ]
 
@@ -35,7 +35,7 @@ const MultiIconComponentFilterBase = [
     ReactNativeModuleId,
     ReactJSXRuntimeModuleId,
     TokensModuleId,
-    undefined,
+    null,
 ]
 
 export type ByGeneratedIconComponent = FilterGenerator<
