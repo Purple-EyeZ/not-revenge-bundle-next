@@ -56,7 +56,7 @@ export let ReactNavigationStack: typeof import('@react-navigation/stack') =
                                 ]),
                                 1,
                             ),
-                            undefined,
+                            null,
                             relative(3),
                         ]),
                     ),

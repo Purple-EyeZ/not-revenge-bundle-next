@@ -28,7 +28,7 @@ export let ActionSheetActionCreators: DiscordModules.Actions.ActionSheetActionCr
                         'openLazy',
                     ),
                     byDependencies([
-                        undefined,
+                        null,
                         ReactModuleId,
                         ReactJSXRuntimeModuleId,
                         DispatcherModuleId,

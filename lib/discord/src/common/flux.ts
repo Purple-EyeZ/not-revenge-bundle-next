@@ -14,14 +14,7 @@ const { relative } = byDependencies
 export const [Dispatcher, DispatcherModuleId] = lookupModule(
     preferExports(
         byProps<DiscordModules.Flux.Dispatcher>('_interceptors'),
-        byDependencies([
-            relative(1),
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            2,
-        ]),
+        byDependencies([relative(1), null, null, null, null, 2]),
     ),
     {
         uninitialized: true,

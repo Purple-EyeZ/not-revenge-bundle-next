@@ -29,7 +29,7 @@ export let SettingListRenderer: SettingListRenderer = proxify(
                         ReactNativeModuleId,
                         relative(1),
                         relative(2),
-                        undefined,
+                        null,
                         ReactJSXRuntimeModuleId,
                     ]),
                 ),
