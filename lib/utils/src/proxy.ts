@@ -194,11 +194,8 @@ export type DestructureOptions<T extends object> = {
     [K in keyof T]?: ProxifyOptions
 }
 
-export type DestructureResult<
-    T extends object,
-    O extends DestructureOptions<T>,
-> = {
-    [K in keyof T]: O[K] extends ProxifyOptions ? T[K] : never
+export type DestructureResult<T extends object> = {
+    [K in keyof T]: T[K]
 }
 
 /**
@@ -216,7 +213,8 @@ export type DestructureResult<
  * // cache is not turned on, so each access will call the signal again
  * const { x, y } = destructure(
  *   proxify(() => ({ x: Math.random(), y: [Math.random()], z: null })),
- *   { hint: {} }
+ *   // Optional: Specify ProxifyOptions for each property
+ *   { y: { hint: [] } }
  * )
  *
  * // Non-nullish primitives are not proxifiable
@@ -228,10 +226,10 @@ export type DestructureResult<
  * z // TypeError: Cannot destructure and proxify null (reading 'z')
  * ```
  */
-export function destructure<
-    T extends object,
-    const O extends DestructureOptions<T>,
->(proxified: T, options?: O): DestructureResult<T, O> {
+export function destructure<T extends object, O extends DestructureOptions<T>>(
+    proxified: T,
+    options?: O,
+): DestructureResult<T> {
     return new Proxy({} as T, {
         get: (_, p, r) =>
             proxify(
@@ -250,7 +248,7 @@ export function destructure<
                 },
                 options?.[p as keyof T],
             ),
-    }) as DestructureResult<T, O>
+    }) as DestructureResult<T>
 }
 
 /**

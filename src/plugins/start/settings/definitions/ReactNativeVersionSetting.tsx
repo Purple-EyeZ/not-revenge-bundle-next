@@ -3,9 +3,10 @@ import { Setting } from '../constants'
 import { CopyableSetting } from './shared'
 import type { SettingsItem } from '@revenge-mod/discord/modules/settings'
 
-const { 'OSS Release Version': ossReleaseVersion } =
+// TODO(PalmDevs): Rolldown 1.0.0-beta.34 breaks destructuring with quoted keys, revert to original when this is fixed
+const ossReleaseVersion =
     // @ts-expect-error
-    HermesInternal.getRuntimeProperties()
+    HermesInternal.getRuntimeProperties()['OSS Release Version']
 
 const ReactNativeVersionSetting: SettingsItem = CopyableSetting(
     {
