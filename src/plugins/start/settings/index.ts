@@ -1,10 +1,10 @@
 import { sRefresher, sSections } from '@revenge-mod/discord/_/modules/settings'
 import { onSettingsModulesLoaded } from '@revenge-mod/discord/modules/settings'
 import {
-    waitForModuleByImportedPath,
     waitForModules,
+    waitForModuleWithImportedPath,
 } from '@revenge-mod/modules/finders'
-import { byName } from '@revenge-mod/modules/finders/filters'
+import { withName } from '@revenge-mod/modules/finders/filters'
 import { instead } from '@revenge-mod/patcher'
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'
@@ -30,7 +30,7 @@ const pluginSettings = registerPlugin(
                 require('./register')
             })
 
-            waitForModuleByImportedPath(
+            waitForModuleWithImportedPath(
                 'modules/main_tabs_v2/native/settings/SettingsNavigator.tsx',
                 exports => {
                     patchSettingsNavigator(exports)
@@ -38,7 +38,7 @@ const pluginSettings = registerPlugin(
             )
 
             const unsubSOS = waitForModules(
-                byName('SettingsOverviewScreen'),
+                withName('SettingsOverviewScreen'),
                 exports => {
                     unsubSOS()
                     patchSettingsOverviewScreen(exports)

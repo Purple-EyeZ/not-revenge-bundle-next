@@ -1,10 +1,8 @@
 import { lookupModule } from '@revenge-mod/modules/finders'
 import {
-    byDependencies,
-    byProps,
-    bySingleProp,
-    preferExports,
-    some,
+    withDependencies,
+    withProps,
+    withSingleProp,
 } from '@revenge-mod/modules/finders/filters'
 import {
     ReactJSXRuntimeModuleId,
@@ -14,7 +12,7 @@ import {
 import { proxify } from '@revenge-mod/utils/proxy'
 import type { DiscordModules } from './types'
 
-const { loose, relative } = byDependencies
+const { loose, relative } = withDependencies
 
 // design/native.tsx
 export let Design: Design = proxify(
@@ -22,25 +20,23 @@ export let Design: Design = proxify(
         // ID: 3236
         // [3237, 1366, 3238, 3239, 2, ...];
         const [module] = lookupModule(
-            preferExports(
-                byProps<Design>('TableRow', 'Button'),
-                some(
-                    byDependencies(
-                        loose([
-                            null,
-                            null,
-                            null,
-                            relative.withDependencies([2], 1),
-                            2,
-                            null, // 3009
-                            null, // 3010
-                            null, // 3011
-                            null, // 3012
-                            relative.withDependencies([2], 2),
-                        ]),
-                    ),
+            withProps<Design>('TableRow', 'Button').and(
+                withDependencies(
+                    loose([
+                        null,
+                        null,
+                        null,
+                        relative.withDependencies([2], 1),
+                        2,
+                        null, // 3009
+                        null, // 3010
+                        null, // 3011
+                        null, // 3012
+                        relative.withDependencies([2], 2),
+                    ]),
+                ).or(
                     // TODO(PalmDevs): Remove once stable channel is > 295203 (for 295203 and below)
-                    byDependencies(
+                    withDependencies(
                         loose([relative(1), null, relative(2), relative(3), 2]),
                     ),
                 ),
@@ -65,11 +61,10 @@ export let FormSwitch: DiscordModules.Components.FormSwitch = proxify(() => {
     // Deps: [47, 48, 35, 49]
 
     const [module] = lookupModule(
-        preferExports(
-            bySingleProp<{ FormSwitch: DiscordModules.Components.FormSwitch }>(
-                'FormSwitch',
-            ),
-            byDependencies([
+        withSingleProp<{
+            FormSwitch: DiscordModules.Components.FormSwitch
+        }>('FormSwitch').and(
+            withDependencies([
                 [relative(1), relative(2), null, relative(3)],
                 ReactModuleId,
                 ReactNativeModuleId,

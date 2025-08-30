@@ -1,7 +1,7 @@
 import { AlertActionCreators } from '@revenge-mod/discord/actions'
 import { Design } from '@revenge-mod/discord/design'
-import { getModule } from '@revenge-mod/modules/finders'
-import { byProps } from '@revenge-mod/modules/finders/filters'
+import { getModules } from '@revenge-mod/modules/finders'
+import { withProps } from '@revenge-mod/modules/finders/filters'
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'
 import { afterJSX, beforeJSX } from '@revenge-mod/react/jsx-runtime'
@@ -57,13 +57,11 @@ registerPlugin(
     },
     {
         start({ cleanup }) {
-            const unsub = getModule(
-                byProps<{ ProfileBadgeRows: FC<ProfileBadgeRowsProps> }>(
+            const unsub = getModules(
+                withProps<{ ProfileBadgeRows: FC<ProfileBadgeRowsProps> }>(
                     'ProfileBadgeRows',
                 ),
                 ({ ProfileBadgeRows }) => {
-                    unsub()
-
                     cleanup(
                         beforeJSX(ProfileBadgeRows, args => {
                             const [, props] = args

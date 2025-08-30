@@ -2,14 +2,15 @@ import { getAssetByName } from '@revenge-mod/assets'
 import { TokensModuleId } from '@revenge-mod/discord/common'
 import { lookupModule } from '@revenge-mod/modules/finders'
 import {
-    byDependencies,
     createFilterGenerator,
+    withDependencies,
 } from '@revenge-mod/modules/finders/filters'
 import {
     ReactJSXRuntimeModuleId,
     ReactModuleId,
     ReactNativeModuleId,
 } from '@revenge-mod/react'
+import { FilterFlag } from '#modules/src/finders/filters/constants'
 import type {
     Filter,
     FilterGenerator,
@@ -38,7 +39,7 @@ const MultiIconComponentFilterBase = [
     null,
 ]
 
-export type ByGeneratedIconComponent = FilterGenerator<
+export type WithGeneratedIconComponent = FilterGenerator<
     <N extends string>(
         name: N,
         ...assets: string[]
@@ -54,7 +55,7 @@ export type ByGeneratedIconComponent = FilterGenerator<
  * @example
  * ```ts
  * const [CopyIconModule] = lookupModule(
- *   byGeneratedIconComponent('CopyIcon'),
+ *   withGeneratedIconComponent('CopyIcon'),
  *   {
  *     uninitialized: true,
  *   }
@@ -67,7 +68,7 @@ export type ByGeneratedIconComponent = FilterGenerator<
  * @example
  * ```ts
  * const [CircleXIconModule] = lookupModule(
- *   byGeneratedIconComponent(
+ *   withGeneratedIconComponent(
  *     'CircleXIcon',
  *     'CircleXIcon-secondary',
  *     'CircleXIcon-primary',
@@ -78,8 +79,8 @@ export type ByGeneratedIconComponent = FilterGenerator<
  * )
  * ```
  */
-export const byGeneratedIconComponent = createFilterGenerator<
-    Parameters<ByGeneratedIconComponent>
+export const withGeneratedIconComponent = createFilterGenerator<
+    Parameters<WithGeneratedIconComponent>
 >(
     (names, id, exports) => {
         if (typeof exports === 'object') {
@@ -111,13 +112,14 @@ export const byGeneratedIconComponent = createFilterGenerator<
                 IconComponentFilter[4] = mid
             }
 
-            return byDependencies(filter)(id, exports)
+            return withDependencies(filter)(id, exports)
         }
 
         return false
     },
-    names => `revenge.byGeneratedIconComponent(${names.join(',')})`,
-) as ByGeneratedIconComponent
+    names => `revenge.utils.discord.generatedIconComponent(${names.join(',')})`,
+    FilterFlag.Dynamic,
+) as WithGeneratedIconComponent
 
 /**
  * Looks up a generated icon component by its name and asset names.
@@ -139,7 +141,7 @@ export function lookupGeneratedIconComponent<N extends string>(
         if (__DEV__ && badFind) return
     }
 
-    const [module] = lookupModule(byGeneratedIconComponent(...names), {
+    const [module] = lookupModule(withGeneratedIconComponent(...names), {
         uninitialized: true,
     })
 

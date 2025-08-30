@@ -1,10 +1,10 @@
 import { asap, noop } from '@revenge-mod/utils/callback'
 import {
     lookupModule,
-    lookupModuleByImportedPath,
     lookupModules,
+    lookupModuleWithImportedPath,
 } from './lookup'
-import { waitForModuleByImportedPath, waitForModules } from './wait'
+import { waitForModules, waitForModuleWithImportedPath } from './wait'
 import type { If } from '@revenge-mod/utils/types'
 import type { MaybeDefaultExportMatched, Metro } from '../types'
 import type { RunFilterReturnExportsOptions } from './_internal'
@@ -12,7 +12,7 @@ import type { Filter, FilterResult } from './filters'
 import type { LookupModulesOptions } from './lookup'
 import type { WaitForModulesOptions } from './wait'
 
-export type GetModuleOptions<
+export type GetModulesOptions<
     ReturnNamespace extends boolean = boolean,
     Uninitialized extends boolean = boolean,
     All extends boolean = boolean,
@@ -26,16 +26,16 @@ export type GetModuleOptions<
         max?: number
     }
 
-export type GetModuleResult<
+export type GetModulesResult<
     F extends Filter,
-    O extends GetModuleOptions,
+    O extends GetModulesOptions,
 > = O extends RunFilterReturnExportsOptions<true>
     ? MaybeDefaultExportMatched<FilterResult<F>>
     : FilterResult<F>
 
-export type GetModuleCallback<T> = (exports: T, id: Metro.ModuleID) => any
+export type GetModulesCallback<T> = (exports: T, id: Metro.ModuleID) => any
 
-export type GetModuleUnsubscribeFunction = () => void
+export type GetModulesUnsubscribeFunction = () => void
 
 /**
  * Get modules matching the filter.
@@ -48,40 +48,40 @@ export type GetModuleUnsubscribeFunction = () => void
  *
  * @example
  * ```ts
- * getModule(byProps<typeof import('react')>('createElement'), React => {
+ * getModules(withProps<typeof import('react')>('createElement'), React => {
  *   // Immediately called because React is always initialized when plugins are loaded
  * })
  *
- * getModule(byProps<typeof import('@shopify/flash-list')>('FlashList'), FlashList => {
+ * getModules(withProps<typeof import('@shopify/flash-list')>('FlashList'), FlashList => {
  *   // Called when the module is initialized
  * })
  *
  * // Get multiple modules matching the filter
- * getModule(byProps<ReactNative.AssetsRegistry>('registerAsset'), AssetsRegistry => {
+ * getModules(withProps<ReactNative.AssetsRegistry>('registerAsset'), AssetsRegistry => {
  *   // Called 2 times, once for each module that matches the filter
  * }, { max: 2 })
  * ```
  */
-export function getModule<F extends Filter>(
+export function getModules<F extends Filter>(
     filter: F,
-    callback: GetModuleCallback<FilterResult<F>>,
-): GetModuleUnsubscribeFunction
+    callback: GetModulesCallback<FilterResult<F>>,
+): GetModulesUnsubscribeFunction
 
-export function getModule<
+export function getModules<
     F extends Filter,
-    const O extends F extends Filter<any, infer WE>
-        ? If<WE, GetModuleOptions<boolean, boolean, false>, GetModuleOptions>
+    const O extends F extends Filter<any, infer RE>
+        ? If<RE, GetModulesOptions<boolean, boolean, false>, GetModulesOptions>
         : never,
 >(
     filter: F,
-    callback: GetModuleCallback<FilterResult<F>>,
+    callback: GetModulesCallback<FilterResult<F>>,
     options: O,
-): GetModuleUnsubscribeFunction
+): GetModulesUnsubscribeFunction
 
-export function getModule(
+export function getModules(
     filter: Filter,
-    callback: GetModuleCallback<any>,
-    options?: GetModuleOptions,
+    callback: GetModulesCallback<any>,
+    options?: GetModulesOptions,
 ) {
     let max = options?.max ?? 1
 
@@ -123,22 +123,22 @@ export function getModule(
  *
  * @example
  * ```ts
- * getModuleByImportedPath('modules/main_tabs_v2/native/settings/SettingsConstants.tsx', SettingsConstants => {
+ * getModuleWithImportedPath('modules/main_tabs_v2/native/settings/SettingsConstants.tsx', SettingsConstants => {
  *   console.log('Settings page opened') // Logs once the module is initialized
  * })
  * ```
  */
-export function getModuleByImportedPath<T>(
+export function getModuleWithImportedPath<T>(
     path: string,
-    callback: GetModuleCallback<T>,
-): GetModuleUnsubscribeFunction {
-    const [exports, id] = lookupModuleByImportedPath(path)
+    callback: GetModulesCallback<T>,
+): GetModulesUnsubscribeFunction {
+    const [exports, id] = lookupModuleWithImportedPath(path)
     if (id !== undefined) {
         callback(exports, id)
         return noop
     }
 
-    const unsub = waitForModuleByImportedPath(path, (exports, id) => {
+    const unsub = waitForModuleWithImportedPath(path, (exports, id) => {
         unsub()
         callback(exports, id)
     })
