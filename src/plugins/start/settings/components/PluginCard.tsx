@@ -186,6 +186,8 @@ export const InstalledPluginCard = memo(function InstalledPluginCard({
                         ref={switchRef}
                     >
                         <FormSwitch
+                            // Only FormSwitch listens for props changes, so we use a unique key just for this one.
+                            key={plugin.manifest.id}
                             disabled={essential}
                             onValueChange={enabled => {
                                 if (enabled)
