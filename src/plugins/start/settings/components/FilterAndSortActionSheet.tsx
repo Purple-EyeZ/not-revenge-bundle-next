@@ -9,6 +9,7 @@ export interface FilterAndSortActionSheetProps {
         string,
         {
             icon: AssetId
+            desc?: string
             filter: (p: AnyPlugin, meta: InternalPluginMeta) => boolean
         }
     >
@@ -57,7 +58,7 @@ export default function FilterAndSortActionSheet({
         <ActionSheet>
             <BottomSheetTitleHeader title="Filter & Sort" />
             <TableRowGroup title="Filter by">
-                {Object.entries(filters).map(([label, { icon }]) => {
+                {Object.entries(filters).map(([label, { icon, desc }]) => {
                     const checked = filter_.includes(label)
 
                     return (
@@ -65,6 +66,7 @@ export default function FilterAndSortActionSheet({
                             key={label}
                             icon={<TableRowAssetIcon id={icon} />}
                             label={label}
+                            subLabel={desc}
                             value={label}
                             checked={checked}
                             onPress={() => {

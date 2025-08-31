@@ -6,6 +6,7 @@ import SearchInput from '@revenge-mod/components/SearchInput'
 import { ActionSheetActionCreators } from '@revenge-mod/discord/actions'
 import { Design } from '@revenge-mod/discord/design'
 import {
+    InternalPluginFlags,
     isPluginEnabled,
     isPluginEssential,
     isPluginInternal,
@@ -64,14 +65,22 @@ const Filters: FilterAndSortActionSheetProps['filters'] = {
     },
     Internal: {
         icon: RevengeIcon,
+        desc: 'Included with Revenge.',
         filter: (_, meta) => isPluginInternal(meta),
     },
     Essential: {
         icon: getAssetIdByName('StarIcon')!,
+        desc: 'Required for Revenge to function properly.',
         filter: (_, meta) => isPluginEssential(meta),
     },
+    'Non-APIs': {
+        icon: getAssetIdByName('PaperIcon')!,
+        desc: 'Exclude essential plugins that provide APIs for other plugins.',
+        filter: (_, meta) =>
+            !(meta.iflags & InternalPluginFlags.ImplicitDependency),
+    },
 } satisfies FilterAndSortActionSheetProps['filters']
-const DefaultFilters: FilterAndSortActionSheetProps['filter'] = []
+const DefaultFilters: FilterAndSortActionSheetProps['filter'] = ['Non-APIs']
 
 const DefaultSort: keyof typeof Sorts = 'Name'
 const Sorts = {
@@ -103,7 +112,7 @@ function Screen() {
     )
 
     const [filter, setFilter] = useState(route.params?.filter ?? DefaultFilters)
-    const [matchAll, setMatchAll] = useState(route.params?.matchAll ?? false)
+    const [matchAll, setMatchAll] = useState(route.params?.matchAll ?? true)
 
     const [reverse, setReverse] = useState(route.params?.reverse ?? false)
     const [sort, setSort] = useState(route.params?.sort ?? DefaultSort)
