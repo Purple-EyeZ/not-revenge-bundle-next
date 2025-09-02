@@ -7,6 +7,7 @@ import * as storage from '@revenge-mod/storage'
 import { getStorage } from '@revenge-mod/storage'
 import { defineLazyProperty } from '@revenge-mod/utils/object'
 import type { AnyPlugin } from '@revenge-mod/plugins/_'
+import type { Plugin } from '@revenge-mod/plugins/types'
 import type { StorageOptions } from '@revenge-mod/storage'
 
 const storageOptions = new WeakMap<AnyPlugin, StorageOptions>()
@@ -28,16 +29,24 @@ registerPlugin(
             })
         },
         init({ decorate }) {
-            decorate(plugin => {
-                defineLazyProperty(plugin.api, 'storage', () =>
-                    getStorage(
-                        `${PluginsStorageDirectory}/${plugin.manifest.id}.json`,
-                        {
-                            ...storageOptions.get(plugin),
-                            directory: 'documents',
-                        },
-                    ),
+            const makePluginStorage = (plugin: Plugin, opts?: StorageOptions) =>
+                getStorage(
+                    `${PluginsStorageDirectory}/${plugin.manifest.id}.json`,
+                    {
+                        ...opts,
+                        directory: 'documents',
+                    },
                 )
+
+            decorate(plugin => {
+                const opts = storageOptions.get(plugin)
+
+                if (opts?.load)
+                    plugin.api.storage = makePluginStorage(plugin, opts)
+                else
+                    defineLazyProperty(plugin.api, 'storage', () =>
+                        makePluginStorage(plugin, opts),
+                    )
             })
         },
     },
