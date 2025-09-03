@@ -25,8 +25,6 @@ export const [Tokens, TokensModuleId] = lookupModule(withProps('RawColor')) as [
     Metro.ModuleID,
 ]
 
-const OnlyImportTrackerDep = [2]
-
 /**
  * If you need to use this ID, unproxify {@link Constants} first.
  *
@@ -49,10 +47,10 @@ export let Constants: DiscordModules.Constants = proxify(
                 withDependencies(
                     loose([
                         null,
-                        relative.withDependencies(OnlyImportTrackerDep, 1),
-                        relative.withDependencies(OnlyImportTrackerDep, 2),
-                        relative.withDependencies(OnlyImportTrackerDep, 3),
-                        relative.withDependencies(OnlyImportTrackerDep, 4),
+                        relative.withDependencies([2], 1),
+                        relative.withDependencies([2], 2),
+                        relative.withDependencies([2], 3),
+                        relative.withDependencies([2], 4),
                     ]),
                 ),
             ),

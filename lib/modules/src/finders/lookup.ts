@@ -429,7 +429,7 @@ export function lookupModuleWithImportedPath<T = any>(
 const __DEBUG_TRACER_IGNORE_LIST__ = __BUILD_FLAG_DEBUG_MODULE_LOOKUPS__
     ? proxify(
           () => [
-              require('./get').getModule,
+              require('./get').getModules,
               isModuleInitialized(0) &&
                   require('@revenge-mod/utils/discord')
                       .lookupGeneratedIconComponent,

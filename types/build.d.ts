@@ -22,12 +22,16 @@ declare global {
      */
     const __BUILD_FLAG_DEBUG_MODULE_LOOKUPS__: boolean
     /**
-     * Whether to debug proxified values.
+     * Whether to debug lazy values.
      *
-     * - Immediately calls the signal to initialize the proxified value.
-     * - Warns if the proxified value is nullish.
+     * **This flag may break a lot of things depending on initialization timing. Use with caution.**
+     *
+     * - Immediately calls the signal to initialize proxified values.
+     * - Immediately calls the loader to initialize lazy object properties.
+     *
+     * - Warns if the values are nullish.
      */
-    const __BUILD_FLAG_DEBUG_PROXIFIED_VALUES__: boolean
+    const __BUILD_FLAG_DEBUG_LAZY_VALUES__: boolean
     /**
      * Whether to debug module waits.
      *

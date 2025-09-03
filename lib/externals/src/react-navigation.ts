@@ -41,23 +41,26 @@ export let ReactNavigationNative: typeof import('@react-navigation/native') =
 export let ReactNavigationStack: typeof import('@react-navigation/stack') =
     proxify(
         () => {
+            const firstDep = relative.withDependencies(
+                loose([[[]], ReactModuleId, ReactJSXRuntimeModuleId]),
+                1,
+            )
+
             const [module] = lookupModule(
-                withProps<typeof ReactNavigationStack>('StackView').and(
-                    withDependencies(
-                        loose([
-                            relative.withDependencies(
-                                loose([
-                                    [[]],
-                                    ReactModuleId,
-                                    ReactJSXRuntimeModuleId,
-                                ]),
-                                1,
+                withProps<typeof ReactNavigationStack>('StackView')
+                    .and(
+                        withDependencies(
+                            loose([firstDep, null, relative(2)]),
+                        ).or(
+                            // TODO: Remove once stable channel is > 297201 (for 297201 and below)
+                            withDependencies(
+                                loose([firstDep, null, relative(3)]),
                             ),
-                            null,
-                            relative(3),
-                        ]),
+                        ),
+                    )
+                    .keyAs(
+                        'revenge.externals.ReactNavigation.ReactNavigationStack',
                     ),
-                ),
                 {
                     uninitialized: true,
                 },

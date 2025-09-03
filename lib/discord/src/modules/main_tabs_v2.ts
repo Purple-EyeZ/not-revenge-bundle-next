@@ -18,12 +18,20 @@ export interface RootNavigationRef {
 export let RootNavigationRef: RootNavigationRef = proxify(
     () => {
         const [module] = lookupModule(
-            withProps<RootNavigationRef>('getRootNavigationRef').and(
-                withDependencies([
-                    loose([[], loose([relative(1), relative(2)])]),
-                    2,
-                ]),
-            ),
+            withProps<RootNavigationRef>('getRootNavigationRef')
+                .and(
+                    withDependencies([
+                        loose([
+                            relative.withDependencies([], 1),
+                            relative.withDependencies(
+                                loose([relative(1), relative(2)]),
+                                2,
+                            ),
+                        ]),
+                        2,
+                    ]),
+                )
+                .keyAs('revenge.discord.modules.mainTabsV2.RootNavigationRef'),
             {
                 uninitialized: true,
             },

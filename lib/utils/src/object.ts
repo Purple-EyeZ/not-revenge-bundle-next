@@ -1,3 +1,4 @@
+import { getCurrentStack } from './error'
 import type { AnyObject } from './types'
 
 /**
@@ -73,6 +74,16 @@ function lazyPropDesc<T extends object, K extends keyof T>(
     key: K,
     loader: () => T[K],
 ): PropertyDescriptor {
+    if (__BUILD_FLAG_DEBUG_LAZY_VALUES__) {
+        const value = loader()
+        if (value == null) DEBUG_warnNullishLazyValue(key)
+
+        return {
+            configurable: true,
+            value,
+        }
+    }
+
     return {
         configurable: true,
         get(this: T) {
@@ -80,4 +91,11 @@ function lazyPropDesc<T extends object, K extends keyof T>(
             return (this[key] = loader())
         },
     }
+}
+
+function DEBUG_warnNullishLazyValue(key: PropertyKey) {
+    nativeLoggingHook(
+        `\u001b[33mLazy property ${String(key)} is being initialized to a nullish value:\n${getCurrentStack()}\u001b[0m`,
+        2,
+    )
 }

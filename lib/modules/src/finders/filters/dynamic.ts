@@ -212,9 +212,9 @@ function depShallowCompare(
 }
 
 function depGetRelMagnitude(dep: number) {
-    const rootRelative = dep & RelativeSignBit
+    const sign = dep & RelativeSignBit
     dep = dep & RelativeBitMask
-    if (rootRelative) dep = -dep
+    if (sign) dep = -dep
     return dep
 }
 
@@ -228,11 +228,11 @@ function depGenFilterKey(deps: ComparableDependencyMap): string {
         else if (typeof dep === 'object') {
             if (dep.l) key += '#'
             // relative.withDependencies?
-            if (dep.r) key += depGenRelativeKeyPart(dep.r)
+            if (dep.r) key += `${depGenRelativeKeyPart(dep.r)}:`
 
             key += `[${depGenFilterKey(dep)}],`
         } else {
-            if (dep & RelativeBit) key += depGenRelativeKeyPart(dep)
+            if (dep & RelativeBit) key += `${depGenRelativeKeyPart(dep)},`
             else key += `${dep},`
         }
     }
@@ -243,5 +243,5 @@ function depGenFilterKey(deps: ComparableDependencyMap): string {
 function depGenRelativeKeyPart(dep: number) {
     const magnitude = depGetRelMagnitude(dep)
     const prefix = dep & RelativeRootBit ? '~' : '^'
-    return `${prefix}${magnitude},`
+    return `${prefix}${magnitude}`
 }

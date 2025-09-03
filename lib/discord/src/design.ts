@@ -20,27 +20,39 @@ export let Design: Design = proxify(
         // ID: 3236
         // [3237, 1366, 3238, 3239, 2, ...];
         const [module] = lookupModule(
-            withProps<Design>('TableRow', 'Button').and(
-                withDependencies(
-                    loose([
-                        null,
-                        null,
-                        null,
-                        relative.withDependencies([2], 1),
-                        2,
-                        null, // 3009
-                        null, // 3010
-                        null, // 3011
-                        null, // 3012
-                        relative.withDependencies([2], 2),
-                    ]),
-                ).or(
-                    // TODO(PalmDevs): Remove once stable channel is > 295203 (for 295203 and below)
+            withProps<Design>('TableRow', 'Button')
+                .and(
                     withDependencies(
-                        loose([relative(1), null, relative(2), relative(3), 2]),
+                        loose([
+                            null,
+                            null,
+                            relative.withDependencies(
+                                [ReactNativeModuleId, 2],
+                                1,
+                            ),
+                            relative.withDependencies([2], 2),
+                            2,
+                        ]),
+                    ).or(
+                        // TODO(PalmDevs): Remove once stable channel is > 297201 (for 297201 and below)
+                        withDependencies(
+                            loose([
+                                null,
+                                null,
+                                null,
+                                relative.withDependencies([2], 1),
+                                2,
+                                null, // 3009
+                                null, // 3010
+                                null, // 3011
+                                null, // 3012
+                                relative.withDependencies([2], 2),
+                            ]),
+                        ),
                     ),
-                ),
-            ),
+                )
+                .keyAs('revenge.discord.design.Design'),
+
             {
                 uninitialized: true,
             },

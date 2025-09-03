@@ -138,7 +138,7 @@ export function proxify<T>(signal: () => T, options?: ProxifyOptions): T {
         cacheable: options?.cache ?? false,
     })
 
-    if (__BUILD_FLAG_DEBUG_PROXIFIED_VALUES__)
+    if (__BUILD_FLAG_DEBUG_LAZY_VALUES__)
         // Prevent race conditions where proxified values with a self modifying signal gets called,
         // modifying the original value to a non-proxified value, causing subsequent destructure() calls to fail
 

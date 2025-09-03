@@ -3,6 +3,7 @@ import { cacheFilterResultForId } from '../caches'
 import { metroRequire } from '../metro/custom'
 import { mInitialized } from '../metro/patches'
 import { isModuleExportBad } from '../metro/utils'
+import { FilterFlag } from './filters'
 import type { If } from '@revenge-mod/utils/types'
 import type { Metro } from '../types'
 import type { Filter } from './filters'
@@ -89,7 +90,9 @@ export function runFilter(
     options?: RunFilterOptions,
 ): FilterResultFlag | undefined {
     if (exports === undefined) {
-        if ((filter as Filter<any, false>)(id)) {
+        if (filter.flags & FilterFlag.RequiresExports) return
+
+        if (filter(id)) {
             if (options?.initialize ?? true) {
                 const module = metroRequire(id)
                 // Check if the required module is not blacklisted
