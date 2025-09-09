@@ -8,6 +8,7 @@ Object.defineProperty(globalThis, '__c', {
         delete globalThis.__c
         globalThis.__c = clear
 
-        require('./preinit')
+        // @as-require
+        import('./preinit')
     },
 })

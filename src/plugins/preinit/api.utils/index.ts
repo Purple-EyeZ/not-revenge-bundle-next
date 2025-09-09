@@ -1,5 +1,13 @@
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'
+import defer * as UtilsCallback from '@revenge-mod/utils/callback'
+import defer * as UtilsDiscord from '@revenge-mod/utils/discord'
+import defer * as UtilsError from '@revenge-mod/utils/error'
+import defer * as UtilsObject from '@revenge-mod/utils/object'
+import defer * as UtilsPromise from '@revenge-mod/utils/promise'
+import defer * as UtilsProxy from '@revenge-mod/utils/proxy'
+import defer * as UtilsReact from '@revenge-mod/utils/react'
+import defer * as UtilsTree from '@revenge-mod/utils/tree'
 
 registerPlugin(
     {
@@ -12,17 +20,17 @@ registerPlugin(
     {
         preInit({ unscoped }) {
             unscoped.utils = {
-                callback: require('@revenge-mod/utils/callback'),
-                error: require('@revenge-mod/utils/error'),
-                object: require('@revenge-mod/utils/object'),
-                promise: require('@revenge-mod/utils/promise'),
-                proxy: require('@revenge-mod/utils/proxy'),
-                tree: require('@revenge-mod/utils/tree'),
+                callback: UtilsCallback,
+                error: UtilsError,
+                object: UtilsObject,
+                promise: UtilsPromise,
+                proxy: UtilsProxy,
+                tree: UtilsTree,
             }
         },
         init({ unscoped: { utils } }) {
-            utils.discord = require('@revenge-mod/utils/discord')
-            utils.react = require('@revenge-mod/utils/react')
+            utils.discord = UtilsDiscord
+            utils.react = UtilsReact
         },
     },
     PluginFlags.Enabled,

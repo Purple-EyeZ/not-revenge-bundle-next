@@ -1,4 +1,10 @@
+import defer * as DiscordActions from '@revenge-mod/discord/actions'
+import defer * as DiscordCommon from '@revenge-mod/discord/common'
 import { Logger } from '@revenge-mod/discord/common'
+import defer * as DiscordDesign from '@revenge-mod/discord/design'
+import defer * as DiscordFlux from '@revenge-mod/discord/flux'
+import defer * as DiscordModulesMainTabsV2 from '@revenge-mod/discord/modules/main_tabs_v2'
+import defer * as DiscordNative from '@revenge-mod/discord/native'
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'
 import {
@@ -32,7 +38,7 @@ registerPlugin(
                         {} as PluginApiDiscord.Modules,
                         {
                             mainTabsV2: () => {
-                                return require('@revenge-mod/discord/modules/main_tabs_v2')
+                                return DiscordModulesMainTabsV2
                             },
                             settings: () => ({
                                 ...require('@revenge-mod/discord/modules/settings'),
@@ -43,19 +49,19 @@ registerPlugin(
                 } as PluginApiDiscord),
                 {
                     actions: () => {
-                        return require('@revenge-mod/discord/actions')
+                        return DiscordActions
                     },
                     common: () => {
-                        return require('@revenge-mod/discord/common')
+                        return DiscordCommon
                     },
                     flux: () => {
-                        return require('@revenge-mod/discord/flux')
+                        return DiscordFlux
                     },
                     design: () => {
-                        return require('@revenge-mod/discord/design')
+                        return DiscordDesign
                     },
                     native: () => {
-                        return require('@revenge-mod/discord/native')
+                        return DiscordNative
                     },
                 },
             )

@@ -9,12 +9,15 @@ const unsub = onRunApplication(() => {
     unsub()
 
     try {
-        require('./start')
+        // @as-require
+        import('./start')
     } catch (e) {
         onError(e)
     }
 })
 
 // Run all init plugins
-require('~/plugins/init')
-require('@revenge-mod/plugins/init')
+// @as-require
+import '~/plugins/init'
+// @as-require
+import '@revenge-mod/plugins/init'

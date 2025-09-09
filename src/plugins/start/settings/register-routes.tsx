@@ -6,19 +6,16 @@ import {
 import { pEmitter } from '@revenge-mod/plugins/_'
 import { proxify } from '@revenge-mod/utils/proxy'
 import { useLayoutEffect } from 'react'
+import defer * as NavigatorHeaderWithIcon_ from './components/NavigatorHeaderWithIcon'
 import { Setting } from './constants'
 import type { StackScreenProps } from '@react-navigation/stack'
 import type { ReactNavigationParamList } from '@revenge-mod/externals/react-navigation'
 import type { PluginApi } from '@revenge-mod/plugins/types'
 
-type NavigatorHeaderWithIcon =
-    typeof import('./components/NavigatorHeaderWithIcon')['default']
+type NavigatorHeaderWithIcon = (typeof NavigatorHeaderWithIcon_)['default']
 
-let NavigatorHeaderWithIcon = proxify(
-    (): NavigatorHeaderWithIcon =>
-        (NavigatorHeaderWithIcon =
-            require('./components/NavigatorHeaderWithIcon').default),
-    {},
+let NavigatorHeaderWithIcon: NavigatorHeaderWithIcon = proxify(
+    () => (NavigatorHeaderWithIcon = NavigatorHeaderWithIcon_.default),
 )
 
 pEmitter.on('started', plugin => {

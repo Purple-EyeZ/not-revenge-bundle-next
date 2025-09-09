@@ -6,11 +6,10 @@ import {
 } from './lookup'
 import { waitForModules, waitForModuleWithImportedPath } from './wait'
 import type { If } from '@revenge-mod/utils/types'
-import type { MaybeDefaultExportMatched, Metro } from '../types'
-import type { RunFilterReturnExportsOptions } from './_internal'
+import type { Metro } from '../types'
 import type { Filter, FilterResult } from './filters'
 import type { LookupModulesOptions } from './lookup'
-import type { WaitForModulesOptions } from './wait'
+import type { WaitForModulesOptions, WaitForModulesResult } from './wait'
 
 export type GetModulesOptions<
     ReturnNamespace extends boolean = boolean,
@@ -29,9 +28,7 @@ export type GetModulesOptions<
 export type GetModulesResult<
     F extends Filter,
     O extends GetModulesOptions,
-> = O extends RunFilterReturnExportsOptions<true>
-    ? MaybeDefaultExportMatched<FilterResult<F>>
-    : FilterResult<F>
+> = WaitForModulesResult<F, O>
 
 export type GetModulesCallback<T> = (exports: T, id: Metro.ModuleID) => any
 
@@ -74,7 +71,7 @@ export function getModules<
         : never,
 >(
     filter: F,
-    callback: GetModulesCallback<FilterResult<F>>,
+    callback: GetModulesCallback<GetModulesResult<F, O>>,
     options: O,
 ): GetModulesUnsubscribeFunction
 

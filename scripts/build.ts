@@ -1,13 +1,15 @@
-import { transform } from '@swc/core'
 import { $, main } from 'bun'
 import chalk from 'chalk'
-import { existsSync } from 'fs'
 import { exists, mkdir, readdir, rm, writeFile } from 'fs/promises'
 import { parse } from 'path'
 import { rolldown } from 'rolldown'
-import { aliasPlugin, importGlobPlugin } from 'rolldown/experimental'
+import { importGlobPlugin } from 'rolldown/experimental'
 import pkg from '../package.json'
-import type { OutputChunk, RolldownPlugin } from 'rolldown'
+import asRequire from './plugins/as-require'
+import hermesSwcPlugin from './plugins/hermes-swc'
+import hermesCPlugin from './plugins/hermesc'
+import importDefer from './plugins/import-defer'
+import shimAliases from './plugins/shim-aliases'
 
 const ShimsDir = `${import.meta.dir}/../shims`
 const AssetsDir = `${import.meta.dir}/../src/assets`
@@ -40,8 +42,9 @@ export default async function build(dev = Dev, log = true) {
         input: 'src/index.ts',
         platform: 'neutral',
         optimization: {
-            // ! BROKEN, DO NOT USE!
-            // inlineConst: true,
+            inlineConst: {
+                mode: 'smart',
+            },
             // @ts-expect-error: Option not documented, but added in 1.0.0-beta.30
             pifeForModuleWrappers: true,
         },
@@ -86,38 +89,11 @@ export default async function build(dev = Dev, log = true) {
             __BUILD_FLAG_LOG_PROMISE_REJECTIONS__: String(dev),
         },
         plugins: [
-            aliasPlugin({
-                entries: [
-                    {
-                        find: 'react/jsx-runtime',
-                        replacement: `${ShimsDir}/react~jsx-runtime.ts`,
-                    },
-                    // Do not move React to the top!
-                    // If you do that, react/jsx-runtime would resolve to ${ShimsDir}/react.ts/jsx-runtime instead.
-                    {
-                        find: 'react',
-                        replacement: `${ShimsDir}/react.ts`,
-                    },
-                    {
-                        find: 'react-native',
-                        replacement: `${ShimsDir}/react-native.ts`,
-                    },
-                    {
-                        find: '@react-navigation/native',
-                        replacement: `${ShimsDir}/@react-navigation~native.ts`,
-                    },
-                    {
-                        find: '@react-navigation/stack',
-                        replacement: `${ShimsDir}/@react-navigation~stack.ts`,
-                    },
-                    {
-                        find: '@shopify/flash-list',
-                        replacement: `${ShimsDir}/@shopify~flash-list.ts`,
-                    },
-                ],
-            }),
+            asRequire(),
+            shimAliases(ShimsDir),
             importGlobPlugin(),
-            swcPlugin(),
+            hermesSwcPlugin(),
+            importDefer(),
             hermesCPlugin({
                 flags: [
                     dev ? '-Og' : '-O',
@@ -170,130 +146,6 @@ export default async function build(dev = Dev, log = true) {
                 `\u{2714} Compiled successfully! ${chalk.gray(`(took ${(performance.now() - start).toFixed(2)}ms)`)}`,
             ),
         )
-}
-
-function swcPlugin() {
-    return {
-        name: 'swc',
-        transform: {
-            filter: {
-                moduleType: ['js', 'jsx', 'ts', 'tsx'],
-            },
-            handler(code) {
-                return transform(code, {
-                    jsc: {
-                        transform: {
-                            react: {
-                                runtime: 'automatic',
-                            },
-                        },
-                        parser: {
-                            syntax: 'typescript',
-                            tsx: true,
-                        },
-                    },
-                    env: {
-                        // https://github.com/facebook/hermes/blob/main/doc/Features.md
-                        targets: 'fully supports es6',
-                        include: [
-                            'transform-async-generator-functions',
-                            'transform-block-scoping',
-                            'transform-classes',
-                            'transform-duplicate-named-capturing-groups-regex',
-                            'transform-named-capturing-groups-regex',
-                        ],
-                        exclude: [
-                            // Async functions are supported, only async arrow functions aren't
-                            // Source: https://github.com/facebook/hermes/issues/1395
-                            'transform-async-to-generator',
-                            'transform-exponentiation-operator',
-                            'transform-logical-assignment-operators',
-                            'transform-nullish-coalescing-operator',
-                            'transform-numeric-separator',
-                            'transform-object-rest-spread',
-                            'transform-optional-catch-binding',
-                            'transform-optional-chaining',
-                            'transform-parameters',
-                            'transform-template-literals',
-                        ],
-                    },
-                })
-            },
-        },
-    } satisfies RolldownPlugin
-}
-
-async function hermesCPlugin({
-    after,
-    before,
-    flags,
-}: {
-    flags?: string[]
-    before?: (v: string) => void
-    after?: (v: string) => void
-} = {}) {
-    const paths = {
-        win32: 'win64-bin/hermesc.exe',
-        darwin: 'osx-bin/hermesc',
-        linux: 'linux64-bin/hermesc',
-    }
-
-    if (!(process.platform in paths))
-        throw new Error(`Unsupported platform: ${process.platform}`)
-
-    const sdksDir = './node_modules/react-native/sdks'
-    const binPath = `${sdksDir}/hermesc/${paths[process.platform as keyof typeof paths]}`
-
-    if (!existsSync(binPath))
-        throw new Error(
-            `Hermes compiler not found at ${binPath}. Please ensure you have react-native installed.`,
-        )
-
-    const ver = await Bun.file(`${sdksDir}/.hermesversion`).text()
-
-    return {
-        name: 'hermesc',
-        generateBundle(_, bundle) {
-            if (before) before(ver)
-
-            const file = bundle['revenge.js'] as OutputChunk
-            if (!file || !file.code) throw new Error('No code to compile')
-
-            // TODO(scripts/build): Remove this when we have a better way to add sourceURL
-            file.code += `//# sourceURL=Revenge`
-
-            const cmdlist = [binPath, '-emit-binary', ...(flags ?? [])]
-
-            const cmd = Bun.spawnSync<'pipe', 'pipe'>(cmdlist, {
-                // @ts-expect-error: Types are incorrect, but this works
-                stdin: new Blob([file.code]),
-                stdout: 'pipe',
-            })
-
-            if (cmd.exitCode) {
-                if (cmd.stderr.length)
-                    throw new Error(
-                        `Got error from hermesc: ${cmd.stderr.toString()}`,
-                    )
-                else
-                    throw new Error(`hermesc exited with code: ${cmd.exitCode}`)
-            }
-
-            const buf = cmd.stdout
-            if (!buf.length)
-                throw new Error(
-                    `No output from hermesc. Probably a compilation error.\nTry running the command manually: ${cmdlist.join(' ')}`,
-                )
-
-            this.emitFile({
-                type: 'asset',
-                fileName: `${file.fileName.split('.')[0]!}.bundle`,
-                source: buf,
-            })
-
-            if (after) after(ver)
-        },
-    } satisfies RolldownPlugin
 }
 
 async function generateAssets() {

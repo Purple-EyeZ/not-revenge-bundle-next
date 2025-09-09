@@ -1,5 +1,6 @@
 import TableRowAssetIcon from '@revenge-mod/components/TableRowAssetIcon'
 import { RouteNames, Setting } from '../constants'
+import defer * as RevengeDeveloperSettingScreen from '../screens/RevengeDeveloperSettingScreen'
 import type { SettingsItem } from '@revenge-mod/discord/modules/settings'
 
 const RevengeDeveloperSetting: SettingsItem = {
@@ -9,8 +10,7 @@ const RevengeDeveloperSetting: SettingsItem = {
     title: () => 'Developer',
     screen: {
         route: RouteNames[Setting.RevengeDeveloper],
-        getComponent: () =>
-            require('../screens/RevengeDeveloperSettingScreen').default,
+        getComponent: () => RevengeDeveloperSettingScreen.default,
     },
 }
 

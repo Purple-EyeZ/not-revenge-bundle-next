@@ -40,7 +40,8 @@ registerPlugin<{ storage: Storage }>(
             api = api_
 
             onSettingsModulesLoaded(() => {
-                require('./utils').register()
+                // @as-require
+                import('./utils').then(it => it.register())
             })
 
             if (api_.plugin.flags & PluginFlags.EnabledLate)

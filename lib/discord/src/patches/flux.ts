@@ -4,7 +4,7 @@ import type { FluxEventDispatchPatch } from '../flux/dispatcher'
 export const fPatchesAll: Set<FluxEventDispatchPatch<any>> = new Set()
 export const fPatches: Map<string, Set<FluxEventDispatchPatch<any>>> = new Map()
 
-const originalDispatch = Dispatcher.dispatch
+const originalDispatch = Dispatcher.dispatch.bind(Dispatcher)
 Dispatcher.dispatch = payload => {
     let res: typeof payload | undefined | void = payload
 
@@ -24,7 +24,7 @@ Dispatcher.dispatch = payload => {
                 } catch {}
     }
 
-    if (res) return Reflect.apply(originalDispatch, Dispatcher, [res])
+    if (res) return originalDispatch(res)
     // If res is undefined, the event is blocked
     return Promise.resolve()
 }

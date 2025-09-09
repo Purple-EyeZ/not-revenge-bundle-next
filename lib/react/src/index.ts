@@ -30,7 +30,8 @@ const unsubRN = waitForModules(
         ReactNativeModuleId = id
         ReactNative = exports
 
-        require('./native/patches')
+        // @as-require
+        import('./native/patches')
     },
     {
         cached: true,

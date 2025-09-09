@@ -1,5 +1,6 @@
 import TableRowAssetIcon from '@revenge-mod/components/TableRowAssetIcon'
 import { RouteNames, Setting } from '../constants'
+import defer * as AssetBrowserSettingScreen from '../screens/AssetBrowserSettingScreen'
 import type { SettingsItem } from '@revenge-mod/discord/modules/settings'
 
 const AssetBrowserSetting: SettingsItem = {
@@ -9,8 +10,7 @@ const AssetBrowserSetting: SettingsItem = {
     title: () => 'Asset Browser',
     screen: {
         route: RouteNames[Setting.AssetBrowser],
-        getComponent: () =>
-            require('../screens/AssetBrowserSettingScreen').default,
+        getComponent: () => AssetBrowserSettingScreen.default,
     },
 }
 

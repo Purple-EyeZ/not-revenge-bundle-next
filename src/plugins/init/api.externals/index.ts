@@ -1,3 +1,7 @@
+import defer * as Browserify from '@revenge-mod/externals/browserify'
+import defer * as ReactNativeClipboard from '@revenge-mod/externals/react-native-clipboard'
+import defer * as ReactNavigation from '@revenge-mod/externals/react-navigation'
+import defer * as Shopify from '@revenge-mod/externals/shopify'
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'
 import { defineLazyProperties } from '@revenge-mod/utils/object'
@@ -17,16 +21,16 @@ registerPlugin(
                 (unscoped.externals = {} as PluginApiExternals),
                 {
                     Browserify: () => {
-                        return require('@revenge-mod/externals/browserify')
+                        return Browserify
                     },
                     ReactNativeClipboard: () => {
-                        return require('@revenge-mod/externals/react-native-clipboard')
+                        return ReactNativeClipboard
                     },
                     ReactNavigation: () => {
-                        return require('@revenge-mod/externals/react-navigation')
+                        return ReactNavigation
                     },
                     Shopify: () => {
-                        return require('@revenge-mod/externals/shopify')
+                        return Shopify
                     },
                 },
             )

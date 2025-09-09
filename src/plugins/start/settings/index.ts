@@ -27,7 +27,8 @@ const pluginSettings = registerPlugin(
     {
         start() {
             onSettingsModulesLoaded(() => {
-                require('./register')
+                // @as-require
+                import('./register')
             })
 
             waitForModuleWithImportedPath(
