@@ -6,7 +6,6 @@ import type { RolldownPlugin } from 'rolldown'
  * Supported statements:
  * - Static side-effect imports: `import 'module'`
  * - Dynamic side-effect imports: `import('module')` and `await import('module')`
- * - Dynamic imports with .then(): `import('module').then(mod => ...)`
  */
 export default function asRequire() {
     return {
@@ -20,17 +19,6 @@ export default function asRequire() {
             let hasChanged = false
             const newCode = code.replace(asRequireRegex, (match, statement) => {
                 const trimmedStatement = statement.trim()
-
-                // import('./mod').then(mod => mod.do()) -> ((mod => mod.do()))(require('./mod'))
-                const importThenRegex =
-                    /^import\((['"])(.+?)\1\)\s*\.then\(([\s\S]+)\);?$/
-                const thenMatch = trimmedStatement.match(importThenRegex)
-                if (thenMatch) {
-                    hasChanged = true
-                    const modulePath = `${thenMatch[1]}${thenMatch[2]}${thenMatch[1]}`
-                    const callback = thenMatch[3].trim()
-                    return `\n((${callback}))(require(${modulePath}));`
-                }
 
                 // import './mod' -> require('./mod')
                 const staticSideEffectRegex = /^import\s+(['"])(.+?)\1;?$/
