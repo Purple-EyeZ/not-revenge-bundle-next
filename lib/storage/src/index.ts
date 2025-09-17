@@ -1,11 +1,27 @@
 import { FileModule } from '@revenge-mod/discord/native'
 import { getErrorStack } from '@revenge-mod/utils/error'
 import { mergeDeep } from '@revenge-mod/utils/object'
-import type { AnyObject, DeepPartial } from '@revenge-mod/utils/types'
+import type { AnyObject, DeepPartial, If } from '@revenge-mod/utils/types'
 
 export type StorageSubscription<T extends AnyObject = AnyObject> = (
-    v: DeepPartial<T>,
+    update: DeepPartial<T>,
+    mode: (typeof StorageUpdateMode)[keyof typeof StorageUpdateMode],
 ) => void
+
+export const StorageUpdateMode = {
+    /**
+     * The update will be merged into the existing storage.
+     */
+    Merge: 0,
+    /**
+     * The update will replace the existing storage.
+     */
+    Replace: 1,
+    /**
+     * Same behavior as {@link StorageUpdateMode.Replace}, but for the intial load of the storage.
+     */
+    Load: 2,
+} as const
 
 export function Storage<T extends AnyObject>(
     this: Storage<T>,
@@ -31,10 +47,22 @@ export function Storage<T extends AnyObject>(
         return () => subscriptions.delete(callback)
     }
 
+    async function write(storage: Storage<T>) {
+        try {
+            const contents = JSON.stringify(storage.cache)
+            await FileModule.writeFile(directory, path, contents, 'utf8')
+        } catch (e) {
+            nativeLoggingHook(
+                `Failed to write storage (<${directory}>/${path}): ${getErrorStack(e)}`,
+                2,
+            )
+        }
+    }
+
     this.get = async function () {
         if (!(await this.exists())) {
             this.cache = options?.default ?? {}
-            await this.set({})
+            await write(this)
             this.loaded = true
             return this.cache
         }
@@ -44,7 +72,8 @@ export function Storage<T extends AnyObject>(
             this.loaded = true
             try {
                 const cache = (this.cache = JSON.parse(contents))
-                for (const sub of subscriptions) sub(cache)
+                for (const sub of subscriptions)
+                    sub(cache, StorageUpdateMode.Load)
                 return cache
             } catch (e) {
                 nativeLoggingHook(
@@ -55,21 +84,18 @@ export function Storage<T extends AnyObject>(
         }
     }
 
-    this.set = async function (value) {
+    this.set = async function (value: any, replace?: boolean) {
         if (!this.cache) await this.get()
-        mergeDeep(this.cache!, value)
+        if (replace) this.cache = value as T
+        else mergeDeep(this.cache as T, value as DeepPartial<T>)
 
-        try {
-            const contents = JSON.stringify(this.cache)
-            await FileModule.writeFile(directory, path, contents, 'utf8')
+        await write(this)
 
-            for (const sub of subscriptions) sub(value)
-        } catch (e) {
-            nativeLoggingHook(
-                `Failed to write storage (<${directory}>/${path}): ${getErrorStack(e)}`,
-                2,
+        for (const sub of subscriptions)
+            sub(
+                value,
+                replace ? StorageUpdateMode.Replace : StorageUpdateMode.Merge,
             )
-        }
     }
 
     if (options?.load) this.get()
@@ -112,8 +138,8 @@ export interface StorageOptions<T extends AnyObject = AnyObject> {
     load?: boolean
 }
 
-export type UseStorageFilter<T extends AnyObject> = (
-    newValue: DeepPartial<T>,
+export type UseStorageFilter<T extends AnyObject = AnyObject> = (
+    ...params: Parameters<StorageSubscription<T>>
 ) => any
 
 export interface Storage<T extends AnyObject> {
@@ -156,7 +182,8 @@ export interface Storage<T extends AnyObject> {
      */
     use(filter?: UseStorageFilter<T>): T | undefined
     /**
-     * Subscribe to storage updates. The callback will be called with what was called in `Storage#set`.
+     * Subscribe to storage updates.
+     *
      * @param callback The callback to call when the storage is updated.
      * @returns A function to unsubscribe.
      */
@@ -169,8 +196,13 @@ export interface Storage<T extends AnyObject> {
      * Set the storage.
      *
      * @param value The value to merge into the storage.
+     * @param replace If true, replaces the entire storage instead of merging.
      */
     set(value: DeepPartial<T>): Promise<void>
+    set<Replace extends boolean>(
+        value: If<Replace, T, DeepPartial<T>>,
+        replace: Replace,
+    ): Promise<void>
     /**
      * Whether the storage is exists.
      */

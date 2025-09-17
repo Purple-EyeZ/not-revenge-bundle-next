@@ -18,16 +18,16 @@ const patch = (
 
     if (before) for (const cb of before) args = cb(args)
 
-    let fiber: ReactElement | null | undefined
+    let el: ReactElement | null | undefined
 
-    // If there are instead patches, fiber will always be set by the instead patches
-    if (instead) for (const cb of instead) fiber = cb(args, jsx)
-    // If there aren't any instead patches, we compute the fiber normally, and it will be set
-    else fiber = Reflect.apply(orig, ReactJSXRuntime, args)
+    // If there are instead patches, el will always be set by the instead patches
+    if (instead) for (const cb of instead) el = cb(args, jsx)
+    // If there aren't any instead patches, we compute el normally, and it will be set
+    else el = Reflect.apply(orig, ReactJSXRuntime, args)
 
-    if (after) for (const cb of after) fiber = cb(fiber!)
+    if (after) for (const cb of after) el = cb(el!)
 
-    return fiber!
+    return el!
 }
 
 instead(ReactJSXRuntime, 'jsx', patch)

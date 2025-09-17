@@ -9,7 +9,7 @@ import { findInReactFiber } from '@revenge-mod/utils/react'
 import { Image } from 'react-native'
 import { Badges, UsersWithBadges } from './constants'
 import { styles, useBadgeStyles } from './styles'
-import { afterReconciled } from './utils'
+import { afterRendered } from './utils'
 import type { FC, ReactElement } from 'react'
 import type {
     ImageProps,
@@ -81,9 +81,9 @@ registerPlugin(
                     )
 
                     cleanup(
-                        afterJSX(ProfileBadgeRows, fiber => {
-                            patchProfileBadgeRows(fiber)
-                            return fiber
+                        afterJSX(ProfileBadgeRows, el => {
+                            patchProfileBadgeRows(el)
+                            return el
                         }),
                     )
                 },
@@ -103,15 +103,15 @@ registerPlugin(
 function patchProfileBadgeRows(
     element: ReactElement<ProfileBadgeRowsProps, FC<ProfileBadgeRowsProps>>,
 ): void {
-    const unpatch = afterReconciled(element, fiber => {
+    const unpatch = afterRendered(element, el => {
         unpatch()
 
         const container = findInReactFiber(
-            fiber as ReactElement,
+            el as ReactElement,
             isViewContainingProfileBadgeElements,
         )
 
-        if (!container) return fiber
+        if (!container) return el
 
         const [{ type: ProfileBadge, props }] = container.props.children
         const userBadges = UsersWithBadges[props.userId]
@@ -139,7 +139,7 @@ function patchProfileBadgeRows(
             if (props.id === DUMMY_SYMBOL) container.props.children.pop()
         }
 
-        return fiber
+        return el
     })
 }
 
@@ -152,7 +152,7 @@ function patchProfileBadge(
     // Return early if we don't actually need to patch this badge
     if (!bnw && !showDialog) return
 
-    const unpatch = afterReconciled(element, fiber => {
+    const unpatch = afterRendered(element, el => {
         unpatch()
 
         // This will not result in a conditional hook error because badges do not change flags during runtime
@@ -160,7 +160,7 @@ function patchProfileBadge(
 
         if (showDialog) {
             const pressable = findInReactFiber(
-                fiber as ReactElement,
+                el as ReactElement,
                 (node): node is ReactElement<PressableProps> =>
                     node.type?.render,
             )
@@ -172,7 +172,7 @@ function patchProfileBadge(
 
         if (bnw) {
             const image = findInReactFiber(
-                fiber as ReactElement,
+                el as ReactElement,
                 (node): node is ReactElement<ImageProps> => node.type === Image,
             )
 
@@ -185,7 +185,7 @@ function patchProfileBadge(
             }
         }
 
-        return fiber
+        return el
     })
 }
 

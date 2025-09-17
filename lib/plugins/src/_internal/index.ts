@@ -136,6 +136,7 @@ export function registerPlugin<O extends PluginApiExtensionsOptions>(
         stop: () => stopPlugin(plugin),
         api: undefined,
         set flags(flags: number) {
+            if (meta.flags === flags) return
             meta.flags = flags
             pEmitter.emit('flagUpdate', this)
         },

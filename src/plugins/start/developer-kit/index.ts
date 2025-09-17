@@ -1,10 +1,13 @@
 import {
     onSettingsModulesLoaded,
+    refreshSettingsNavigator,
     refreshSettingsOverviewScreen,
 } from '@revenge-mod/discord/modules/settings'
 import { InternalPluginFlags, registerPlugin } from '@revenge-mod/plugins/_'
 import { PluginFlags } from '@revenge-mod/plugins/constants'
 import pluginSettings from '../settings'
+import defer * as rdt from './react-devtools'
+import defer * as utils from './utils'
 import type { PluginApi } from '@revenge-mod/plugins/types'
 
 interface Storage {
@@ -36,25 +39,21 @@ registerPlugin<{ storage: Storage }>(
             load: true,
             default: defaultStorage,
         },
-        start(api_) {
+        async start(api_) {
             api = api_
 
-            onSettingsModulesLoaded(() => {
-                // @as-require
-                import('./utils').then(it => it.register())
-            })
+            onSettingsModulesLoaded(utils.register)
 
-            if (api_.plugin.flags & PluginFlags.EnabledLate)
+            if (api_.plugin.flags & PluginFlags.EnabledLate) {
                 refreshSettingsOverviewScreen()
+                refreshSettingsNavigator()
+            }
 
-            Promise.all([import('./react-devtools'), api.storage.get()]).then(
-                ([rdt, settings]) => {
-                    if (settings.devtools.autoConnect) rdt.connect()
-                },
-            )
+            const settings = await api.storage.get()
+            if (settings.devtools.autoConnect) rdt.connect()
         },
         stop({ cleanup }) {
-            cleanup(refreshSettingsOverviewScreen)
+            cleanup(refreshSettingsOverviewScreen, refreshSettingsNavigator)
         },
     },
     PluginFlags.Enabled,

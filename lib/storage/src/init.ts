@@ -1,18 +1,19 @@
 import { Storage } from '@revenge-mod/storage'
 import { useReRender } from '@revenge-mod/utils/react'
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import type { StorageSubscription } from '@revenge-mod/storage'
 
+const proto = Storage.prototype as Storage<any>
 // Actual implementation of Storage#use
-;(Storage.prototype as Storage<any>).use = function (filter) {
+proto.use = function (filter) {
     if (!this.cache) this.get()
 
     const reRender = useReRender()
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const sub: StorageSubscription = filter
-            ? v => {
-                  if (filter(v)) reRender()
+            ? (update, mode) => {
+                  if (filter(update, mode)) reRender()
               }
             : reRender
 

@@ -1,6 +1,6 @@
 import { useEffect, useReducer } from 'react'
 import { findInTree } from './tree'
-import type { ReactNode } from 'react'
+import type { ReactElement } from 'react'
 import type { SearchFilter } from './tree'
 
 export function useIsFirstRender() {
@@ -21,7 +21,7 @@ export function useReRender() {
 const ReactFiberWalkable = new Set(['props', 'children', 'child', 'sibling'])
 
 export function findInReactFiber<F extends SearchFilter>(
-    fiber: Extract<ReactNode, object>,
+    fiber: ReactElement,
     filter: F,
 ) {
     return findInTree<F>(fiber, filter, {

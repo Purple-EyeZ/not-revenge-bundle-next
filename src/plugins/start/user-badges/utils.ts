@@ -1,10 +1,10 @@
 import { after } from '@revenge-mod/patcher'
 import type { FC, ReactElement, ReactNode } from 'react'
 
-export const afterReconciled = (
+export const afterRendered = (
     el: ReactElement<any, FC<any>>,
-    hook: (fiber: ReactNode) => ReactNode,
+    hook: (el: ReactNode) => ReactNode,
 ) =>
-    after(el, 'type', fiber =>
-        fiber instanceof Promise ? fiber.then(hook) : hook(fiber),
+    after(el, 'type', el =>
+        el instanceof Promise ? el.then(hook) : hook(el),
     )

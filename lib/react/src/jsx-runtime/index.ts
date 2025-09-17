@@ -14,7 +14,7 @@ export type InsteadJSXCallback<E extends ElementType> = (
 ) => ReturnType<AnyJSXFactoryFunction> | null
 
 export type AfterJSXCallback<E extends ElementType> = (
-    fiber: ReactElement<ElementTypeProps<E>, E>,
+    element: ReactElement<ElementTypeProps<E>, E>,
 ) => ReturnType<AnyJSXFactoryFunction> | null
 
 type ElementTypeProps<E extends ElementType> = E extends ElementType<
